@@ -3,11 +3,11 @@
   <button
     v-if="!isOpen && !isEdgePosition"
     @click="openPanel"
-    class="fixed z-[99997] flex items-center gap-2 px-5 py-3 text-sm font-semibold rounded-full shadow-lg transition-all hover:scale-105 cursor-pointer"
+    class="fixed z-[99997] flex items-center gap-2 px-5 py-3 text-sm font-semibold rounded-full shadow-lg transition-all hover:scale-105 cursor-pointer max-w-[calc(100vw-2rem)] whitespace-nowrap"
     :style="buttonStyle"
   >
-    <span v-if="buttonEmoji" class="text-lg">{{ buttonEmoji }}</span>
-    {{ buttonText }}
+    <span v-if="buttonEmoji" class="text-lg flex-shrink-0">{{ buttonEmoji }}</span>
+    <span class="truncate">{{ buttonText }}</span>
   </button>
 
   <!-- Floating Button - Vertical (edge positions) -->

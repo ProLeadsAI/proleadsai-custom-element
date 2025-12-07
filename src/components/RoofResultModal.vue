@@ -43,7 +43,7 @@
                 :roof-outline-points="currentResult?.roofOutlinePoints || []"
                 @marker-moved="onMarkerMoved"
               />
-              <div class="absolute bottom-2 left-2 text-white text-xs md:text-sm font-medium bg-black bg-opacity-50 px-2 py-1 rounded">by NTBA</div>
+              <div class="absolute bottom-2 left-2 text-white text-xs md:text-sm font-medium bg-black bg-opacity-50 px-2 py-1 rounded">by ProLeadsAI</div>
             </div>
 
             <!-- Results section -->

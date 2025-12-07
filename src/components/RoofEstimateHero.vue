@@ -37,7 +37,7 @@
               v-model="searchText"
               type="text"
               placeholder="Enter your address"
-              class="w-full py-2 outline-none bg-transparent pr-8 md:pr-8 text-stone-800"
+              class="w-full py-2 outline-none bg-transparent pr-8 md:pr-8 text-stone-800 text-base"
               @focus="handleInputFocus"
               @keyup.enter="searchText.trim() && handleEstimateClick()"
             />
@@ -45,7 +45,7 @@
         </div>
       </div>
 
-      <p v-if="heroImageUrl" class="absolute bottom-4 left-4 text-white text-sm font-medium">by NotTheBestAgency</p>
+      <p v-if="heroImageUrl" class="absolute bottom-4 left-4 text-white text-sm font-medium">by ProLeadsAI</p>
     </div>
 
     <!-- Results Modal -->

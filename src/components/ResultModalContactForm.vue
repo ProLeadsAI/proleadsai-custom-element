@@ -9,9 +9,9 @@
       </h3>
       <p class="text-white text-xs md:text-sm mb-3 md:mb-4">Submit your info and we'll get in touch.</p>
       <div class="space-y-3">
-        <input v-model="form.name" type="text" placeholder="Full Name" class="w-full px-4 py-2 rounded-full bg-white text-sm" />
-        <input v-model="form.email" type="email" placeholder="Email" class="w-full px-4 py-2 rounded-full bg-white text-sm" />
-        <input v-model="form.phone" type="tel" placeholder="Phone Number" class="w-full px-4 py-2 rounded-full bg-white text-sm" />
+        <input v-model="form.name" type="text" placeholder="Full Name" class="w-full px-4 py-2 rounded-full bg-white text-base" />
+        <input v-model="form.email" type="email" placeholder="Email" class="w-full px-4 py-2 rounded-full bg-white text-base" />
+        <input v-model="form.phone" type="tel" placeholder="Phone Number" class="w-full px-4 py-2 rounded-full bg-white text-base" />
         <button :disabled="submitting" @click="submitEstimateForm" class="w-full py-2 md:py-3 bg-yellow-400 text-stone-800 font-semibold rounded-full hover:bg-yellow-500 transition-colors flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-60">
           <!-- Loading spinner -->
           <svg v-if="submitting" class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
