@@ -19,6 +19,10 @@ declare global {
       heroImage?: string
       marginTop?: string
       marginBottom?: string
+      headingFont?: string
+      headingColor?: string
+      textFont?: string
+      textColorShortcode?: string
     }
     sessionId?: string
   }

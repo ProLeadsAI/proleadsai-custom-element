@@ -2,15 +2,15 @@
   <section class="relative py-8 px-4 md:py-16 rounded-xl overflow-hidden" :style="sectionStyle">
     <div class="container mx-auto max-w-4xl">
       <div class="text-center mb-12 md:mb-16">
-        <h1 v-if="headingText" class="text-4xl md:text-5xl font-bold mb-4" :class="headingClass">
+        <h1 v-if="headingText" class="text-4xl md:text-5xl font-bold mb-4" :class="headingClass" :style="headingStyle">
           {{ headingText }}
         </h1>
-        <h1 v-else class="text-4xl md:text-5xl font-bold mb-4">
+        <h1 v-else class="text-4xl md:text-5xl font-bold mb-4" :style="headingStyle">
           <span :class="headingClass">Free</span><br class="md:hidden" />
           <span class="text-[#9d867b]"> Roof Estimate </span><br class="md:hidden" />
           <span :class="headingClass">Instantly</span>
         </h1>
-        <p class="text-lg md:text-xl" :class="subheadingClass">
+        <p class="text-lg md:text-xl" :class="subheadingClass" :style="textStyle">
           {{ subheadingText || 'Enter your address to see your roof size, estimated cost, and steepness.' }}
         </p>
       </div>
@@ -117,6 +117,29 @@ const subheadingClass = computed(() => {
 
 const headingText = computed(() => config.heading || '')
 const subheadingText = computed(() => config.subheading || '')
+
+// Typography styles
+const headingStyle = computed(() => {
+  const styles: string[] = []
+  if (config.headingFont) {
+    styles.push(`font-family: '${config.headingFont}', sans-serif`)
+  }
+  if (config.headingColor) {
+    styles.push(`color: ${config.headingColor}`)
+  }
+  return styles.join('; ')
+})
+
+const textStyle = computed(() => {
+  const styles: string[] = []
+  if (config.textFont) {
+    styles.push(`font-family: '${config.textFont}', sans-serif`)
+  }
+  if (config.textColorShortcode) {
+    styles.push(`color: ${config.textColorShortcode}`)
+  }
+  return styles.join('; ')
+})
 
 const heroImageUrl = computed(() => {
   // If heroImage is explicitly 'none', don't show image

@@ -26,11 +26,27 @@ class RoofEstimatorElement extends HTMLElement {
       heroImage: this.getAttribute('hero-image') || '',
       marginTop: this.getAttribute('margin-top') || '',
       marginBottom: this.getAttribute('margin-bottom') || '',
+      // Typography
+      headingFont: this.getAttribute('heading-font') || '',
+      headingColor: this.getAttribute('heading-color') || '#1c1917',
+      textFont: this.getAttribute('text-font') || '',
+      textColorShortcode: this.getAttribute('text-color') || '#44403c',
     }
     
     console.log('[ProLeadsAI Widget] Config from attributes:', config)
     
     window.__PROLEADSAI_CONFIG__ = config
+
+    // Load Google Fonts if specified
+    const fontsToLoad = [config.headingFont, config.textFont].filter(Boolean)
+    if (fontsToLoad.length > 0) {
+      const uniqueFonts = [...new Set(fontsToLoad)]
+      const fontFamilies = uniqueFonts.map(f => f.replace(/ /g, '+')).join('&family=')
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = `https://fonts.googleapis.com/css2?family=${fontFamilies}:wght@400;500;600;700&display=swap`
+      document.head.appendChild(link)
+    }
 
     // Create a container div inside the element
     const container = document.createElement('div')

@@ -18,6 +18,11 @@ export interface WidgetConfig {
   heroImage: string
   marginTop: string
   marginBottom: string
+  // Typography
+  headingFont: string
+  headingColor: string
+  textFont: string
+  textColorShortcode: string
 }
 
 const DEFAULT_CONFIG: WidgetConfig = {
@@ -38,6 +43,11 @@ const DEFAULT_CONFIG: WidgetConfig = {
   heroImage: '',
   marginTop: '',
   marginBottom: '',
+  // Typography
+  headingFont: '',
+  headingColor: '#1c1917',
+  textFont: '',
+  textColorShortcode: '#44403c',
 }
 
 export function getConfig(): WidgetConfig {
@@ -68,6 +78,10 @@ export function getConfig(): WidgetConfig {
     heroImage: windowConfig.heroImage || DEFAULT_CONFIG.heroImage,
     marginTop: windowConfig.marginTop || DEFAULT_CONFIG.marginTop,
     marginBottom: windowConfig.marginBottom || DEFAULT_CONFIG.marginBottom,
+    headingFont: windowConfig.headingFont || DEFAULT_CONFIG.headingFont,
+    headingColor: windowConfig.headingColor || DEFAULT_CONFIG.headingColor,
+    textFont: windowConfig.textFont || DEFAULT_CONFIG.textFont,
+    textColorShortcode: windowConfig.textColorShortcode || DEFAULT_CONFIG.textColorShortcode,
   }
 }
 

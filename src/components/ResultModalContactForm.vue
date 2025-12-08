@@ -37,12 +37,12 @@
           </svg>
         </div>
         
-        <h4 class="text-white text-xl font-bold mb-2">You're All Set!</h4>
-        <p class="text-white/90 text-sm mb-6">Your request has been submitted successfully.</p>
+        <h4 class="text-xl font-bold mb-2" style="color: white !important;">You're All Set!</h4>
+        <p class="text-sm mb-6" style="color: rgba(255,255,255,0.9) !important;">Your request has been submitted successfully.</p>
         
         <!-- What to expect -->
         <div class="bg-stone-700/50 rounded-lg p-4 text-left">
-          <h5 class="text-yellow-400 font-semibold text-sm mb-3 flex items-center gap-2">
+          <h5 class="font-semibold text-sm mb-3 flex items-center gap-2" style="color: #facc15 !important;">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
@@ -53,28 +53,28 @@
             <li class="flex items-start gap-3">
               <span class="flex-shrink-0 w-6 h-6 bg-yellow-400 text-stone-800 rounded-full flex items-center justify-center text-xs font-bold">1</span>
               <div>
-                <p class="text-white font-medium">Expert Review</p>
-                <p class="text-white/70 text-xs">Our roofing specialist will review your property details</p>
+                <p class="font-medium" style="color: white !important;">Expert Review</p>
+                <p class="text-xs" style="color: rgba(255,255,255,0.7) !important;">Our roofing specialist will review your property details</p>
               </div>
             </li>
             <li class="flex items-start gap-3">
               <span class="flex-shrink-0 w-6 h-6 bg-yellow-400 text-stone-800 rounded-full flex items-center justify-center text-xs font-bold">2</span>
               <div>
-                <p class="text-white font-medium">Personal Call</p>
-                <p class="text-white/70 text-xs">We'll call you within 24 hours to discuss your project</p>
+                <p class="font-medium" style="color: white !important;">Personal Call</p>
+                <p class="text-xs" style="color: rgba(255,255,255,0.7) !important;">We'll call you within 24 hours to discuss your project</p>
               </div>
             </li>
             <li class="flex items-start gap-3">
               <span class="flex-shrink-0 w-6 h-6 bg-yellow-400 text-stone-800 rounded-full flex items-center justify-center text-xs font-bold">3</span>
               <div>
-                <p class="text-white font-medium">Detailed Quote</p>
-                <p class="text-white/70 text-xs">Receive a customized quote based on your specific needs</p>
+                <p class="font-medium" style="color: white !important;">Detailed Quote</p>
+                <p class="text-xs" style="color: rgba(255,255,255,0.7) !important;">Receive a customized quote based on your specific needs</p>
               </div>
             </li>
           </ul>
         </div>
         
-        <p class="text-white/60 text-xs mt-4">
+        <p class="text-xs mt-4" style="color: rgba(255,255,255,0.6) !important;">
           Questions? Call us anytime — we're here to help!
         </p>
       </div>
