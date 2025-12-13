@@ -1,8 +1,21 @@
 # ProLeadsAI Roof Estimator Widget
 
-A Vue 3 custom element widget for the ProLeadsAI roof estimation tool. This widget can be embedded in any website, including WordPress.
+A Vue 3 **Custom Element** (`<roof-estimator>`) that provides an embeddable roof-estimate / lead-capture widget.
 
-## Quick Start
+It supports:
+
+- **Floating button + side panel** mode
+- **Inline embed** mode
+- Theme controls (colors, fonts, hero image)
+- Safe, optional font-size overrides
+
+This repo builds the standalone widget assets used by the WordPress plugin, but the same widget can be embedded on:
+
+- Plain HTML sites
+- React / Vue apps
+- Site builders like Wix, Webflow, Framer, Squarespace (via custom code / embed blocks)
+
+## Quick Start (local development)
 
 ```sh
 pnpm install
@@ -11,27 +24,169 @@ pnpm dev
 
 Open `http://localhost:5173/?orgId=YOUR_ORG_ID` to test locally.
 
+Notes:
+
+- In production, you typically load `dist/proleadsai-widget.iife.js` + `dist/proleadsai-widget.css` and then add the `<roof-estimator>` tag.
+- The widget does **not** use Shadow DOM.
+
 ---
 
-## Custom Element Props
+## Embedding on plain HTML sites
 
-The `<roof-estimator>` custom element accepts the following attributes:
+### 1) Host the build assets
+
+Build the widget:
+
+```sh
+pnpm install
+pnpm build
+```
+
+This outputs:
+
+- `dist/proleadsai-widget.iife.js`
+- `dist/proleadsai-widget.css`
+
+Host those two files somewhere public (your site, S3, CDN, etc.).
+
+### 2) Add to your site
+
+```html
+<!-- In <head> -->
+<link rel="stylesheet" href="https://YOUR-CDN/proleadsai-widget.css" />
+
+<!-- Before closing </body> -->
+<script src="https://YOUR-CDN/proleadsai-widget.iife.js"></script>
+
+<!-- Wherever you want the widget -->
+<roof-estimator
+  org-id="YOUR_ORG_ID"
+  display-mode="inline"
+  heading="Free Roof Estimate Instantly"
+></roof-estimator>
+```
+
+## Embedding on Wix / Framer / other builders
+
+General approach (works for most builders):
+
+- Add the CSS + JS in the builder’s **Site Code / Custom Code / Head** area.
+- Add the `<roof-estimator>` tag inside an **Embed HTML** block where you want it to appear.
+
+If the builder strips custom tags, use an HTML embed block that allows raw HTML, or inject the element via JavaScript.
+
+## Embedding in React / Vue
+
+Because this is a Custom Element, you can use it as a normal HTML tag.
+
+- Ensure the CSS + JS bundle are loaded once (e.g. in `index.html` or via your bundler’s static assets).
+- Then render `<roof-estimator ... />` in your component tree.
+
+React note: React will pass unknown attributes through to the DOM, so you can use the attributes as written below.
+
+Vue note: if you are using Vue templates, you may need to treat it as a custom element in Vue config depending on your setup.
+
+---
+
+## Custom element attributes (props)
+
+The `<roof-estimator>` custom element reads the following attributes (see `src/custom-element.ts`).
+
+### Core
 
 | Attribute | Required | Description | Default |
-|-----------|----------|-------------|---------|
-| `org-id` | Yes | Organization ID from ProLeadsAI | `""` |
+|---|---:|---|---|
+| `org-id` | Yes | ProLeadsAI organization/team id | `""` |
 | `api-url` | No | API base URL | `https://next.proleadsai.com/api` |
-| `google-maps-api-key` | No | Google Maps API key for Places autocomplete | Built-in key |
-| `primary-color` | No | Primary theme color (hex) | `#1d4ed8` |
+| `google-maps-api-key` | No | Google Maps key for Places Autocomplete | `""` |
 
-### Example Usage
+### Display mode
+
+| Attribute | Required | Description | Default |
+|---|---:|---|---|
+| `display-mode` | No | `inline` or `floating` | `inline` |
+
+### Floating button settings (only used when `display-mode="floating"`)
+
+| Attribute | Required | Description | Default |
+|---|---:|---|---|
+| `button-text` | No | Floating button label | `Get Roof Estimate` |
+| `button-emoji` | No | Emoji shown on the button | `🏠` |
+| `button-position` | No | `bottom-right`, `bottom-left`, `bottom-center`, `left-edge`, `right-edge` | `bottom-right` |
+
+### Colors
+
+| Attribute | Required | Description | Default |
+|---|---:|---|---|
+| `primary-color` | No | Primary theme color (used for floating button background) | `#facc15` |
+| `text-color` | No | Floating button text color | `#1c1917` |
+
+### Inline/hero content
+
+| Attribute | Required | Description | Default |
+|---|---:|---|---|
+| `heading` | No | Section heading text | `""` |
+| `subheading` | No | Section subheading text | `""` |
+| `hero-image` | No | Hero image URL. Use `none` to hide. | `""` |
+
+### Background
+
+| Attribute | Required | Description | Default |
+|---|---:|---|---|
+| `bg-style` | No | `none`, `light`, `dark`, `custom` | `none` |
+| `bg-color` | No | Background color if `bg-style="custom"` | `#f5f5f4` |
+
+### Margins (inline embeds)
+
+| Attribute | Required | Description | Default |
+|---|---:|---|---|
+| `margin-top` | No | CSS length (e.g. `40px`, `2rem`) | `""` |
+| `margin-bottom` | No | CSS length (e.g. `40px`, `2rem`) | `""` |
+
+### Typography
+
+| Attribute | Required | Description | Default |
+|---|---:|---|---|
+| `heading-font` | No | Google Font family name for heading | `""` |
+| `heading-color` | No | Heading text color | `#1c1917` |
+| `heading-size` | No | Heading font-size override (safe units only) | `""` |
+| `text-font` | No | Google Font family name for body text | `""` |
+| `text-color-shortcode` | No | Body text color | `#44403c` |
+| `text-size` | No | Body text font-size override (safe units only) | `""` |
+
+Notes:
+
+- `text-color-shortcode` is used for body text color. `text-color` is reserved for the floating button.
+- Font sizes only accept safe CSS lengths (e.g. `14px`, `1.125rem`, `120%`). Invalid values are ignored.
+
+### Example: inline embed
 
 ```html
 <roof-estimator
-  org-id="019ae633-22f9-764f-99d0-19c92d7e5261"
-  api-url="https://next.proleadsai.com/api"
-  google-maps-api-key="YOUR_GOOGLE_MAPS_API_KEY"
-  primary-color="#1d4ed8"
+  org-id="YOUR_ORG_ID"
+  display-mode="inline"
+  heading="Free Roof Estimate Instantly"
+  bg-style="custom"
+  bg-color="#f5f5f4"
+  heading-font="Inter"
+  heading-color="#1c1917"
+  text-font="Inter"
+  text-color-shortcode="#44403c"
+></roof-estimator>
+```
+
+### Example: floating button + side panel
+
+```html
+<roof-estimator
+  org-id="YOUR_ORG_ID"
+  display-mode="floating"
+  button-text="Get Roof Estimate"
+  button-emoji="🏠"
+  button-position="bottom-right"
+  primary-color="#ffd400"
+  text-color="#1d1616"
+  heading="Free Roof Estimate Instantly"
 ></roof-estimator>
 ```
 

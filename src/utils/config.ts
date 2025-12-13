@@ -23,6 +23,8 @@ export interface WidgetConfig {
   headingColor: string
   textFont: string
   textColorShortcode: string
+  headingSize: string
+  textSize: string
 }
 
 const DEFAULT_CONFIG: WidgetConfig = {
@@ -48,11 +50,13 @@ const DEFAULT_CONFIG: WidgetConfig = {
   headingColor: '#1c1917',
   textFont: '',
   textColorShortcode: '#44403c',
+  headingSize: '',
+  textSize: '',
 }
 
 export function getConfig(): WidgetConfig {
   // Try to get from window global (set by WordPress or parent)
-  const windowConfig = window.__PROLEADSAI_CONFIG__ || {}
+  const windowConfig = (window.__PROLEADSAI_CONFIG__ || {}) as Partial<WidgetConfig>
 
   // Try to get orgId from URL params
   let orgId = windowConfig.orgId || ''
@@ -82,6 +86,8 @@ export function getConfig(): WidgetConfig {
     headingColor: windowConfig.headingColor || DEFAULT_CONFIG.headingColor,
     textFont: windowConfig.textFont || DEFAULT_CONFIG.textFont,
     textColorShortcode: windowConfig.textColorShortcode || DEFAULT_CONFIG.textColorShortcode,
+    headingSize: windowConfig.headingSize || DEFAULT_CONFIG.headingSize,
+    textSize: windowConfig.textSize || DEFAULT_CONFIG.textSize,
   }
 }
 

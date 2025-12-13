@@ -2,15 +2,13 @@
   <section class="relative py-8 px-4 md:py-16 rounded-xl overflow-hidden" :style="sectionStyle">
     <div class="container mx-auto max-w-4xl">
       <div class="text-center mb-12 md:mb-16">
-        <h1 v-if="headingText" class="text-4xl md:text-5xl font-bold mb-4" :class="headingClass" :style="headingStyle">
+        <h1 v-if="headingText" class="text-4xl md:text-5xl font-bold mb-4" :style="headingStyle">
           {{ headingText }}
         </h1>
         <h1 v-else class="text-4xl md:text-5xl font-bold mb-4" :style="headingStyle">
-          <span :class="headingClass">Free</span><br class="md:hidden" />
-          <span class="text-[#9d867b]"> Roof Estimate </span><br class="md:hidden" />
-          <span :class="headingClass">Instantly</span>
+          <span>Free Roof Estimate Instantly</span>
         </h1>
-        <p class="text-lg md:text-xl" :class="subheadingClass" :style="textStyle">
+        <p class="text-lg md:text-xl" :style="textStyle">
           {{ subheadingText || 'Enter your address to see your roof size, estimated cost, and steepness.' }}
         </p>
       </div>
@@ -107,16 +105,16 @@ const sectionStyle = computed(() => {
   return style
 })
 
-const headingClass = computed(() => {
-  return config.bgStyle === 'dark' ? 'text-white' : 'text-stone-800'
-})
-
-const subheadingClass = computed(() => {
-  return config.bgStyle === 'dark' ? 'text-gray-300' : 'text-stone-800'
-})
-
 const headingText = computed(() => config.heading || '')
 const subheadingText = computed(() => config.subheading || '')
+
+function sanitizeFontSize(input: string): string {
+  const v = (input || '').trim()
+  if (!v) return ''
+  // allow common CSS length units only
+  if (/^\d+(?:\.\d+)?(px|rem|em|%|vw|vh)$/.test(v)) return v
+  return ''
+}
 
 // Typography styles
 const headingStyle = computed(() => {
@@ -126,6 +124,10 @@ const headingStyle = computed(() => {
   }
   if (config.headingColor) {
     styles.push(`color: ${config.headingColor}`)
+  }
+  const headingSize = sanitizeFontSize(config.headingSize || '')
+  if (headingSize) {
+    styles.push(`font-size: ${headingSize}`)
   }
   return styles.join('; ')
 })
@@ -137,6 +139,12 @@ const textStyle = computed(() => {
   }
   if (config.textColorShortcode) {
     styles.push(`color: ${config.textColorShortcode}`)
+  }
+  const textSize = sanitizeFontSize(config.textSize || '')
+  if (textSize) {
+    styles.push(`font-size: ${textSize}`)
+  } else if (config.displayMode === 'floating') {
+    styles.push('font-size: 1.5rem')
   }
   return styles.join('; ')
 })

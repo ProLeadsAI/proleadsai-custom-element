@@ -30,7 +30,9 @@ class RoofEstimatorElement extends HTMLElement {
       headingFont: this.getAttribute('heading-font') || '',
       headingColor: this.getAttribute('heading-color') || '#1c1917',
       textFont: this.getAttribute('text-font') || '',
-      textColorShortcode: this.getAttribute('text-color') || '#44403c',
+      textColorShortcode: this.getAttribute('text-color-shortcode') || this.getAttribute('text-color') || '#44403c',
+      headingSize: this.getAttribute('heading-size') || '',
+      textSize: this.getAttribute('text-size') || '',
     }
     
     console.log('[ProLeadsAI Widget] Config from attributes:', config)
