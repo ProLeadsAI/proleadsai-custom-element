@@ -51,6 +51,11 @@ export async function getRoofEstimate(params: {
   lat?: number
   lng?: number
   address?: string
+  streetAddress?: string
+  addressLocality?: string
+  addressRegion?: string
+  postalCode?: string
+  addressCountry?: string
 }): Promise<RoofEstimateResult> {
   const config = getConfig()
   const sessionId = getSessionId()
@@ -60,6 +65,11 @@ export async function getRoofEstimate(params: {
   if (params.lat !== undefined) queryParams.set('lat', params.lat.toString())
   if (params.lng !== undefined) queryParams.set('lng', params.lng.toString())
   if (params.address) queryParams.set('address', params.address)
+  if (params.streetAddress) queryParams.set('streetAddress', params.streetAddress)
+  if (params.addressLocality) queryParams.set('addressLocality', params.addressLocality)
+  if (params.addressRegion) queryParams.set('addressRegion', params.addressRegion)
+  if (params.postalCode) queryParams.set('postalCode', params.postalCode)
+  if (params.addressCountry) queryParams.set('addressCountry', params.addressCountry)
   if (sessionId) queryParams.set('sessionId', sessionId)
   if (currentToolSessionId) queryParams.set('toolSessionId', currentToolSessionId)
 
