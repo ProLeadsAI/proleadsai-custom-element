@@ -1,7 +1,7 @@
 <template>
   <section class="relative py-8 px-4 md:py-16 rounded-xl overflow-visible" :style="sectionStyle">
     <div class="container mx-auto max-w-4xl">
-      <div class="text-center mb-12 md:mb-14">
+      <div class="text-center mb-12 md:mb-14" :class="{ 'pt-12': isFloatingMode }">
         <h1 v-if="headingText" class="text-4xl md:text-5xl font-bold mb-4" :style="headingStyle">
           {{ headingText }}
         </h1>
@@ -57,6 +57,9 @@ import { getRoofEstimate, type RoofEstimateResult } from '@/utils/api'
 // Get config lazily to ensure custom element has set it
 const getConfigValue = () => getConfig()
 const config = getConfigValue()
+
+// Check if in floating mode (for layout adjustments)
+const isFloatingMode = computed(() => config.displayMode === 'floating')
 
 // Default hero image
 const DEFAULT_HERO_IMAGE = 'https://cdn.builder.io/api/v1/image/assets/TEMP/7b790725ef0619df1137261025e74d6713b2a206?placeholderIfAbsent=true&apiKey=ada693a1d2ba46d699e3baea8b61070c'
