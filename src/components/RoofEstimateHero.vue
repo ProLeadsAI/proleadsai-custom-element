@@ -40,6 +40,8 @@
       :error="estimateError"
       :result="estimateResult"
       :address="selectedAddress?.address || ''"
+      :text-size="config.textSize"
+      :heading-size="config.headingSize"
       @close="showModal = false"
     />
   </section>
@@ -115,6 +117,8 @@ const headingStyle = computed(() => {
   const headingSize = sanitizeFontSize(config.headingSize || '')
   if (headingSize) {
     styles.push(`font-size: ${headingSize}`)
+  } else if (config.displayMode === 'floating') {
+    styles.push('font-size: 1.5rem')
   }
   return styles.join('; ')
 })
@@ -131,7 +135,7 @@ const textStyle = computed(() => {
   if (textSize) {
     styles.push(`font-size: ${textSize}`)
   } else if (config.displayMode === 'floating') {
-    styles.push('font-size: 1.5rem')
+    styles.push('font-size: 1rem')
   }
   return styles.join('; ')
 })

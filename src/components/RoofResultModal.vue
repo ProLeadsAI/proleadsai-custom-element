@@ -49,7 +49,7 @@
             <!-- Results section -->
             <div class="w-full md:w-5/12 p-4 md:p-6 lg:p-8 bg-stone-50 md:overflow-y-auto">
               <div class="mb-4 md:mb-6">
-                <h2 class="text-lg md:text-xl font-semibold text-stone-800 mb-2">{{ address }}</h2>
+                <h2 class="result-heading font-semibold text-stone-800 mb-2" :style="headingStyle">{{ address }}</h2>
               </div>
 
               <!-- Statistics -->
@@ -73,8 +73,8 @@
                     </svg>
                     </div>
                     <div>
-                      <div class="text-xl md:text-3xl font-bold text-stone-800">{{ formatNumber(currentResult?.roofAreaSqFt) }} sq ft</div>
-                      <div class="text-xs md:text-sm text-gray-500">Total Roof Square Feet</div>
+                      <div class="result-stat-value font-bold text-stone-800" :style="headingStyle">{{ formatNumber(currentResult?.roofAreaSqFt) }} sq ft</div>
+                      <div class="result-stat-label text-gray-500" :style="textStyle">Total Roof Square Feet</div>
                     </div>
                   </div>
                 </div>
@@ -98,8 +98,8 @@
                     </svg>
                     </div>
                     <div>
-                      <div class="text-xl md:text-3xl font-bold text-stone-800">${{ formatNumber(currentResult?.estimate) }}</div>
-                      <div class="text-xs md:text-sm text-gray-500">Estimated Replacement Cost</div>
+                      <div class="result-stat-value font-bold text-stone-800" :style="headingStyle">${{ formatNumber(currentResult?.estimate) }}</div>
+                      <div class="result-stat-label text-gray-500" :style="textStyle">Estimated Replacement Cost</div>
                     </div>
                   </div>
                 </div>
@@ -125,8 +125,8 @@
                     </svg>
                     </div>
                     <div>
-                      <div class="text-xl md:text-3xl font-bold text-stone-800">{{ currentResult?.roofPitch?.predominantPitchType || 'Standard' }}</div>
-                      <div class="text-xs md:text-sm text-gray-500">Average Steepness</div>
+                      <div class="result-stat-value font-bold text-stone-800" :style="headingStyle">{{ currentResult?.roofPitch?.predominantPitchType || 'Standard' }}</div>
+                      <div class="result-stat-label text-gray-500" :style="textStyle">Average Steepness</div>
                     </div>
                   </div>
                 </div>
@@ -163,6 +163,8 @@ const props = defineProps<{
   loading: boolean
   error: string
   result: RoofEstimateResult | null
+  textSize?: string
+  headingSize?: string
 }>()
 
 const emit = defineEmits<{
@@ -185,6 +187,21 @@ const currentResult = computed(() => {
     return props.result
   }
   return resultHistory.value[currentResultIndex.value]
+})
+
+// Computed styles based on props
+const headingStyle = computed(() => {
+  if (props.headingSize) {
+    return { fontSize: props.headingSize }
+  }
+  return {}
+})
+
+const textStyle = computed(() => {
+  if (props.textSize) {
+    return { fontSize: props.textSize }
+  }
+  return {}
 })
 
 watch(
@@ -230,5 +247,21 @@ function handleOutsideClick() {
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
+}
+
+/* Default font sizes - can be overridden by plugin settings */
+.result-heading {
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+}
+
+.result-stat-value {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.result-stat-label {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }
 </style>
