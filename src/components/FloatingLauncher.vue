@@ -23,7 +23,7 @@
   </button>
 
   <!-- Overlay -->
-  <Teleport to="body">
+  <Teleport :to="teleportTarget" :disabled="!teleportTarget">
     <Transition name="fade">
       <div
         v-if="isOpen"
@@ -34,7 +34,7 @@
   </Teleport>
 
   <!-- Slide-out Panel -->
-  <Teleport to="body">
+  <Teleport :to="teleportTarget" :disabled="!teleportTarget">
     <Transition name="slide">
       <div
         v-if="isOpen"
@@ -82,6 +82,8 @@ const props = defineProps<{
 
 const config = getConfig()
 const isOpen = ref(false)
+
+const teleportTarget = computed(() => window.__PROLEADSAI_TELEPORT__ || null)
 
 const isEdgePosition = computed(() => {
   const pos = props.position || config.buttonPosition

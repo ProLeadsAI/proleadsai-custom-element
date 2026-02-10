@@ -31,6 +31,7 @@ export default defineConfig({
       fileName: 'proleadsai-widget',
       formats: ['iife'],
     },
+    cssCodeSplit: false,
     rollupOptions: {
       output: {
         inlineDynamicImports: true,

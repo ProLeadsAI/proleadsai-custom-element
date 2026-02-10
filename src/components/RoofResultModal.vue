@@ -1,5 +1,5 @@
 <template>
-  <Teleport to="body">
+  <Teleport :to="teleportTarget" :disabled="!teleportTarget">
     <Transition name="modal">
       <div v-if="show" class="fixed inset-0 overflow-y-auto bg-black/80 flex items-start md:items-center justify-center p-2 md:p-4" style="z-index: 9999999;" @click="handleOutsideClick">
         <div class="bg-white w-full max-w-4xl rounded-xl shadow-xl relative my-4 md:my-0 md:max-h-[90vh] md:overflow-hidden" @click.stop>
@@ -156,6 +156,8 @@ import { ref, computed, watch } from 'vue'
 import RoofMapViewer from './RoofMapViewer.vue'
 import ResultModalContactForm from './ResultModalContactForm.vue'
 import { getRoofEstimate, type RoofEstimateResult } from '@/utils/api'
+
+const teleportTarget = computed(() => window.__PROLEADSAI_TELEPORT__ || null)
 
 const props = defineProps<{
   show: boolean

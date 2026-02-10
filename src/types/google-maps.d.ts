@@ -25,6 +25,8 @@ declare global {
       textColorShortcode?: string
     }
     sessionId?: string
+    __PROLEADSAI_SHADOW_ROOT__?: ShadowRoot
+    __PROLEADSAI_TELEPORT__?: HTMLElement
   }
 }
 

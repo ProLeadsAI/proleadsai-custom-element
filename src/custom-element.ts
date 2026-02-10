@@ -2,7 +2,28 @@ import './style.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 
-// Don't use Shadow DOM - mount directly to allow Tailwind styles to work
+// Resolve the widget CSS URL from the current script's location
+function getWidgetCssUrl(): string {
+  // Try to find our script tag
+  const scripts = document.querySelectorAll('script[src]')
+  for (const script of scripts) {
+    const src = (script as HTMLScriptElement).src
+    if (src.includes('proleadsai-widget') || src.includes('proleadsai-widget-ce')) {
+      // Replace .js with .css, or find sibling CSS file
+      const baseUrl = src.substring(0, src.lastIndexOf('/'))
+      // CSS is in ../css/ relative to js/
+      return baseUrl.replace('/js', '/css') + '/proleadsai-widget.css'
+    }
+  }
+  // Fallback: try to find existing link tag
+  const links = document.querySelectorAll('link[href*="proleadsai-widget"]')
+  if (links.length > 0) {
+    return (links[0] as HTMLLinkElement).href
+  }
+  return ''
+}
+
+// Shadow DOM custom element for full CSS isolation
 class RoofEstimatorElement extends HTMLElement {
   private _app: ReturnType<typeof createApp> | null = null
 
@@ -39,7 +60,7 @@ class RoofEstimatorElement extends HTMLElement {
     
     window.__PROLEADSAI_CONFIG__ = config
 
-    // Load Google Fonts if specified
+    // Load Google Fonts into document head (fonts must be in main document to work in Shadow DOM)
     const fontsToLoad = [config.headingFont, config.textFont].filter(Boolean)
     if (fontsToLoad.length > 0) {
       const uniqueFonts = [...new Set(fontsToLoad)]
@@ -50,9 +71,59 @@ class RoofEstimatorElement extends HTMLElement {
       document.head.appendChild(link)
     }
 
-    // Create a container div inside the element
+    // Inject Google Places autocomplete styles into document head
+    // (.pac-container is appended to <body> by Google, outside Shadow DOM)
+    if (!document.getElementById('proleadsai-pac-styles')) {
+      const pacStyle = document.createElement('style')
+      pacStyle.id = 'proleadsai-pac-styles'
+      pacStyle.textContent = `
+        .pac-container {
+          z-index: 100000 !important;
+          background-color: white !important;
+          border-radius: 12px !important;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+          margin-top: 5px !important;
+          padding: 4px 0 !important;
+          border: 1px solid #eee !important;
+          font-family: inherit !important;
+        }
+        .pac-item {
+          padding: 10px 12px !important;
+          cursor: pointer !important;
+          font-size: 14px !important;
+          line-height: 1.4 !important;
+        }
+        .pac-item:hover { background-color: #f7fafc !important; }
+        .pac-item-query { font-size: 14px !important; }
+        .pac-icon { margin-right: 8px !important; }
+      `
+      document.head.appendChild(pacStyle)
+    }
+
+    // Create Shadow DOM for full CSS isolation
+    const shadow = this.attachShadow({ mode: 'open' })
+
+    // Load widget CSS into Shadow DOM via <link> tag
+    const cssUrl = getWidgetCssUrl()
+    if (cssUrl) {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = cssUrl
+      shadow.appendChild(link)
+    }
+
+    // Create teleport target inside Shadow DOM (for modals, overlays, panels)
+    const teleportTarget = document.createElement('div')
+    teleportTarget.id = 'proleadsai-teleport'
+    shadow.appendChild(teleportTarget)
+
+    // Expose shadow root and teleport target globally so Vue components can use them
+    window.__PROLEADSAI_SHADOW_ROOT__ = shadow
+    window.__PROLEADSAI_TELEPORT__ = teleportTarget
+
+    // Create Vue mount container inside Shadow DOM
     const container = document.createElement('div')
-    this.appendChild(container)
+    shadow.appendChild(container)
 
     // Mount Vue app
     this._app = createApp(App)
