@@ -29,7 +29,7 @@ export interface WidgetConfig {
 
 const DEFAULT_CONFIG: WidgetConfig = {
   orgId: '',
-  apiBaseUrl: 'https://next.proleadsai.com/api',
+  apiBaseUrl: 'https://app.proleadsai.com/api',
   googleMapsApiKey: 'AIzaSyBc5YTUt-WuwKhEQyY3aoIcTob7tisYhmo',
   primaryColor: '#facc15',
   textColor: '#1c1917',

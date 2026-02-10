@@ -10,7 +10,7 @@ class RoofEstimatorElement extends HTMLElement {
     // Read attributes and set global config
     const config = {
       orgId: this.getAttribute('org-id') || '',
-      apiBaseUrl: this.getAttribute('api-url') || 'https://next.proleadsai.com/api',
+      apiBaseUrl: this.getAttribute('api-url') || 'https://app.proleadsai.com/api',
       googleMapsApiKey: this.getAttribute('google-maps-api-key') || '',
       primaryColor: this.getAttribute('primary-color') || '#facc15',
       textColor: this.getAttribute('text-color') || '#1c1917',

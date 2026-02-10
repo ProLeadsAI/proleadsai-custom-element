@@ -97,7 +97,7 @@ The `<roof-estimator>` custom element reads the following attributes (see `src/c
 | Attribute | Required | Description | Default |
 |---|---:|---|---|
 | `org-id` | Yes | ProLeadsAI organization/team id | `""` |
-| `api-url` | No | API base URL | `https://next.proleadsai.com/api` |
+| `api-url` | No | API base URL | `https://app.proleadsai.com/api` |
 | `google-maps-api-key` | No | Google Maps key for Places Autocomplete | `""` |
 
 ### Display mode
@@ -214,7 +214,7 @@ export interface WidgetConfig {
 connectedCallback() {
   const config = {
     orgId: this.getAttribute('org-id') || '',
-    apiBaseUrl: this.getAttribute('api-url') || 'https://next.proleadsai.com/api',
+    apiBaseUrl: this.getAttribute('api-url') || 'https://app.proleadsai.com/api',
     googleMapsApiKey: this.getAttribute('google-maps-api-key') || '',
     primaryColor: this.getAttribute('primary-color') || '#1d4ed8',
     newProp: this.getAttribute('new-prop') || 'default-value',  // Add here
@@ -229,7 +229,7 @@ connectedCallback() {
 panelElement.innerHTML = `
   <roof-estimator
     org-id="${config.orgId || ''}"
-    api-url="${config.apiUrl || 'https://next.proleadsai.com/api'}"
+    api-url="${config.apiUrl || 'https://app.proleadsai.com/api'}"
     google-maps-api-key="${config.googleMapsApiKey || ''}"
     primary-color="${config.primaryColor || '#1d4ed8'}"
     new-prop="${config.newProp || ''}"
@@ -241,7 +241,7 @@ panelElement.innerHTML = `
 
 ```php
 wp_localize_script( $this->plugin_name . '-widget-launcher', 'proleadsaiWidget', array(
-  'apiUrl' => 'https://next.proleadsai.com/api',
+  'apiUrl' => 'https://app.proleadsai.com/api',
   'orgId' => $settings['team_id'] ?? '',
   'googleMapsApiKey' => $settings['google_maps_api_key'] ?? '',
   'primaryColor' => $settings['primary_color'] ?? '#1d4ed8',
