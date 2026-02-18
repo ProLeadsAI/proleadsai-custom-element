@@ -62,7 +62,7 @@ const config = getConfigValue()
 const isFloatingMode = computed(() => config.displayMode === 'floating')
 
 // Default hero image
-const DEFAULT_HERO_IMAGE = 'https://cdn.builder.io/api/v1/image/assets/TEMP/7b790725ef0619df1137261025e74d6713b2a206?placeholderIfAbsent=true&apiKey=ada693a1d2ba46d699e3baea8b61070c'
+const DEFAULT_HERO_IMAGE = 'https://cdn.proleadsai.com/images/widget-house-plugin.png'
 
 // Computed styles based on config
 const sectionStyle = computed(() => {
