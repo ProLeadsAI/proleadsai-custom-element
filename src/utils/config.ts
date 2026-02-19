@@ -30,7 +30,7 @@ export interface WidgetConfig {
 const DEFAULT_CONFIG: WidgetConfig = {
   orgId: '',
   apiBaseUrl: 'https://app.proleadsai.com/api',
-  googleMapsApiKey: 'AIzaSyBc5YTUt-WuwKhEQyY3aoIcTob7tisYhmo',
+  googleMapsApiKey: '',
   primaryColor: '#facc15',
   textColor: '#1c1917',
   displayMode: 'inline',
