@@ -1,6 +1,7 @@
 // API utilities for roof estimate
 
 import { getConfig, getSessionId } from './config'
+import { assertWidgetAvailable, isOutOfCreditsError, markWidgetUnavailable } from './availability'
 
 // Tool session ID - tracks a specific search "flow", refreshed after each form submission
 // This is SEPARATE from sessionId (which is persistent per user/browser)
@@ -58,6 +59,7 @@ export async function getRoofEstimate(params: {
   addressCountry?: string
 }): Promise<RoofEstimateResult> {
   const config = getConfig()
+  await assertWidgetAvailable()
   const sessionId = getSessionId()
   const currentToolSessionId = getToolSessionId()
 
@@ -81,10 +83,21 @@ export async function getRoofEstimate(params: {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.message || 'Failed to get roof estimate')
+    const message = errorData.message || 'Failed to get roof estimate'
+    if (response.status === 403 && isOutOfCreditsError(message)) {
+      markWidgetUnavailable(message)
+    }
+    throw new Error(message)
   }
 
   const data = await response.json()
+
+  if (data?.error) {
+    if (data?.statusCode === 403 && isOutOfCreditsError(data?.message)) {
+      markWidgetUnavailable(data.message)
+    }
+    throw new Error(data?.message || 'Failed to get roof estimate')
+  }
 
   // Update toolSessionId if returned (API creates one if not provided)
   if (data.toolSessionId) {
@@ -111,6 +124,7 @@ export async function submitRoofEstimateForm(data: {
   coordinates?: { lat: number; lng: number }
 }): Promise<FormSubmitResult> {
   const config = getConfig()
+  await assertWidgetAvailable()
   const sessionId = getSessionId()
   const currentToolSessionId = getToolSessionId()
 
@@ -134,7 +148,11 @@ export async function submitRoofEstimateForm(data: {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.message || 'Failed to submit form')
+    const message = errorData.message || 'Failed to submit form'
+    if (response.status === 403 && isOutOfCreditsError(message)) {
+      markWidgetUnavailable(message)
+    }
+    throw new Error(message)
   }
 
   const result = await response.json()

@@ -32,6 +32,7 @@ class RoofEstimatorElement extends HTMLElement {
     const config = {
       orgId: this.getAttribute('org-id') || '',
       apiBaseUrl: this.getAttribute('api-url') || 'https://app.proleadsai.com/api',
+      disableWhenUnavailable: this.hasAttribute('disable-when-unavailable') && this.getAttribute('disable-when-unavailable') !== 'false',
       googleMapsApiKey: this.getAttribute('google-maps-api-key') || '',
       primaryColor: this.getAttribute('primary-color') || '#facc15',
       textColor: this.getAttribute('text-color') || '#1c1917',

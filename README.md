@@ -98,6 +98,7 @@ The `<roof-estimator>` custom element reads the following attributes (see `src/c
 |---|---:|---|---|
 | `org-id` | Yes | ProLeadsAI organization/team id | `""` |
 | `api-url` | No | API base URL | `https://app.proleadsai.com/api` |
+| `disable-when-unavailable` | No | If set, the widget checks the app API first and hides/blocks itself when the org has no credits left | not set |
 | `google-maps-api-key` | No | Google Maps key for Places Autocomplete | `""` |
 
 ### Display mode
@@ -165,6 +166,7 @@ Notes:
 <roof-estimator
   org-id="YOUR_ORG_ID"
   display-mode="inline"
+  disable-when-unavailable="true"
   heading="Free Roof Estimate Instantly"
   bg-style="custom"
   bg-color="#f5f5f4"
@@ -181,6 +183,7 @@ Notes:
 <roof-estimator
   org-id="YOUR_ORG_ID"
   display-mode="floating"
+  disable-when-unavailable="true"
   button-text="Get Roof Estimate"
   button-emoji="🏠"
   button-position="bottom-right"
@@ -189,6 +192,31 @@ Notes:
   heading="Free Roof Estimate Instantly"
 ></roof-estimator>
 ```
+
+## Availability Gating
+
+If you want the iframe/embed to disappear once the org is out of credits, use:
+
+```html
+<roof-estimator
+  org-id="YOUR_ORG_ID"
+  api-url="https://app.proleadsai.com/api"
+  disable-when-unavailable="true"
+></roof-estimator>
+```
+
+What this does:
+
+- The widget calls `GET /api/organization/:orgId/widget-status` before rendering.
+- If the API says the org is out of credits, the widget renders nothing.
+- The widget also short-circuits future client-side requests after an out-of-credits response.
+- The real protection still lives in the app API. `roof-estimate` and `forms/submit` remain server-enforced, so overriding the UI does not bypass limits.
+
+Recommended setup:
+
+- Use `disable-when-unavailable="true"` for UX.
+- Keep server-side credit enforcement in `proleadsai-better-auth` as the source of truth.
+- Treat iframe/client-side hide logic as convenience only, not security.
 
 ---
 
@@ -202,6 +230,7 @@ To add a new prop to the widget:
 export interface WidgetConfig {
   orgId: string
   apiBaseUrl: string
+  disableWhenUnavailable: boolean
   googleMapsApiKey: string
   primaryColor: string
   newProp: string  // Add your new prop
@@ -215,6 +244,7 @@ connectedCallback() {
   const config = {
     orgId: this.getAttribute('org-id') || '',
     apiBaseUrl: this.getAttribute('api-url') || 'https://app.proleadsai.com/api',
+    disableWhenUnavailable: this.hasAttribute('disable-when-unavailable') && this.getAttribute('disable-when-unavailable') !== 'false',
     googleMapsApiKey: this.getAttribute('google-maps-api-key') || '',
     primaryColor: this.getAttribute('primary-color') || '#1d4ed8',
     newProp: this.getAttribute('new-prop') || 'default-value',  // Add here
@@ -230,6 +260,7 @@ panelElement.innerHTML = `
   <roof-estimator
     org-id="${config.orgId || ''}"
     api-url="${config.apiUrl || 'https://app.proleadsai.com/api'}"
+    disable-when-unavailable="${config.disableWhenUnavailable ? 'true' : 'false'}"
     google-maps-api-key="${config.googleMapsApiKey || ''}"
     primary-color="${config.primaryColor || '#1d4ed8'}"
     new-prop="${config.newProp || ''}"
@@ -243,6 +274,7 @@ panelElement.innerHTML = `
 wp_localize_script( $this->plugin_name . '-widget-launcher', 'proleadsaiWidget', array(
   'apiUrl' => 'https://app.proleadsai.com/api',
   'orgId' => $settings['team_id'] ?? '',
+  'disableWhenUnavailable' => true,
   'googleMapsApiKey' => $settings['google_maps_api_key'] ?? '',
   'primaryColor' => $settings['primary_color'] ?? '#1d4ed8',
   'newProp' => $settings['new_prop'] ?? '',  // Add here

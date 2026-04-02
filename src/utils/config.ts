@@ -3,6 +3,7 @@
 export interface WidgetConfig {
   orgId: string
   apiBaseUrl: string
+  disableWhenUnavailable: boolean
   googleMapsApiKey: string
   primaryColor: string
   textColor: string
@@ -30,6 +31,7 @@ export interface WidgetConfig {
 const DEFAULT_CONFIG: WidgetConfig = {
   orgId: '',
   apiBaseUrl: 'https://app.proleadsai.com/api',
+  disableWhenUnavailable: false,
   googleMapsApiKey: '',
   primaryColor: '#facc15',
   textColor: '#1c1917',
@@ -54,6 +56,16 @@ const DEFAULT_CONFIG: WidgetConfig = {
   textSize: '',
 }
 
+function parseBooleanish(value: unknown, fallback = false): boolean {
+  if (typeof value === 'boolean') return value
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase()
+    if (['true', '1', 'yes', 'on'].includes(normalized)) return true
+    if (['false', '0', 'no', 'off', ''].includes(normalized)) return false
+  }
+  return fallback
+}
+
 export function getConfig(): WidgetConfig {
   // Try to get from window global (set by WordPress or parent)
   const windowConfig = (window.__PROLEADSAI_CONFIG__ || {}) as Partial<WidgetConfig>
@@ -68,6 +80,7 @@ export function getConfig(): WidgetConfig {
   return {
     orgId,
     apiBaseUrl: windowConfig.apiBaseUrl || DEFAULT_CONFIG.apiBaseUrl,
+    disableWhenUnavailable: parseBooleanish(windowConfig.disableWhenUnavailable, DEFAULT_CONFIG.disableWhenUnavailable),
     googleMapsApiKey: windowConfig.googleMapsApiKey || DEFAULT_CONFIG.googleMapsApiKey,
     primaryColor: windowConfig.primaryColor || DEFAULT_CONFIG.primaryColor,
     textColor: windowConfig.textColor || DEFAULT_CONFIG.textColor,

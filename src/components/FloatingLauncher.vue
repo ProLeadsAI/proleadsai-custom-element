@@ -70,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import RoofEstimateHero from './RoofEstimateHero.vue'
 import { getConfig } from '@/utils/config'
 
@@ -88,11 +88,6 @@ const teleportTarget = computed(() => window.__PROLEADSAI_TELEPORT__ || null)
 const isEdgePosition = computed(() => {
   const pos = props.position || config.buttonPosition
   return pos === 'left-edge' || pos === 'right-edge'
-})
-
-const isLeftEdge = computed(() => {
-  const pos = props.position || config.buttonPosition
-  return pos === 'left-edge'
 })
 
 const buttonStyle = computed(() => {
@@ -166,13 +161,21 @@ function onModalOpened() {
   document.body.style.overflow = ''
 }
 
-// Listen for modal close to clean up
-if (typeof window !== 'undefined') {
-  window.addEventListener('proleadsai:modal-close', () => {
-    isOpen.value = false
-    document.body.style.overflow = ''
-  })
+function handleModalClose() {
+  isOpen.value = false
+  document.body.style.overflow = ''
 }
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('proleadsai:modal-close', handleModalClose)
+}
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('proleadsai:modal-close', handleModalClose)
+  }
+  document.body.style.overflow = ''
+})
 </script>
 
 <style scoped>

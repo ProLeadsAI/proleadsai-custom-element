@@ -5,6 +5,7 @@ declare global {
     __PROLEADSAI_CONFIG__?: {
       orgId?: string
       apiBaseUrl?: string
+      disableWhenUnavailable?: boolean | string
       googleMapsApiKey?: string
       primaryColor?: string
       textColor?: string
