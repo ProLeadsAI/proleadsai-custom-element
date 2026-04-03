@@ -173,6 +173,15 @@ const estimateError = ref('')
 const estimateResult = ref<RoofEstimateResult | null>(null)
 const showModal = ref(false)
 
+function notifyParentModalState(open: boolean) {
+  if (typeof window === 'undefined' || window.parent === window)
+    return
+
+  window.parent.postMessage({
+    type: open ? 'proleadsai:modal-open' : 'proleadsai:modal-close'
+  }, '*')
+}
+
 // Override attachShadow to inject custom styles into PlaceAutocompleteElement
 // This is needed because Google uses a closed shadow DOM
 const setupShadowDomStyleOverride = () => {
@@ -325,6 +334,11 @@ onMounted(() => {
   initPlaces()
 })
 
+watch(showModal, (isOpen) => {
+  window.dispatchEvent(new CustomEvent(isOpen ? 'proleadsai:modal-open' : 'proleadsai:modal-close'))
+  notifyParentModalState(isOpen)
+})
+
 // Handle the Get Estimate button click
 const handleEstimateClick = async () => {
   estimateError.value = ''
@@ -336,9 +350,6 @@ const handleEstimateClick = async () => {
 
   showModal.value = true
   estimateLoading.value = true
-  
-  // Dispatch event to close the slide-out panel
-  window.dispatchEvent(new CustomEvent('proleadsai:modal-open'))
 
   try {
     let params: {
