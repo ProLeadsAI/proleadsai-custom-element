@@ -6,6 +6,8 @@ declare global {
       orgId?: string
       apiBaseUrl?: string
       disableWhenUnavailable?: boolean | string
+      openTriggerId?: string
+      hideDefaultLauncher?: boolean | string
       googleMapsApiKey?: string
       primaryColor?: string
       textColor?: string
@@ -28,6 +30,10 @@ declare global {
     sessionId?: string
     __PROLEADSAI_SHADOW_ROOT__?: ShadowRoot
     __PROLEADSAI_TELEPORT__?: HTMLElement
+    ProLeadsAI?: {
+      mount: (selector: string | HTMLElement, options?: Record<string, unknown>) => void
+      openSearch: () => void
+    }
   }
 }
 

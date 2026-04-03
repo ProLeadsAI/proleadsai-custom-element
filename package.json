@@ -8,8 +8,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build:lib": "vite build",
+    "build": "pnpm build:widget && pnpm build:iframe",
+    "build:widget": "vite build --config vite.widget.config.ts",
+    "build:iframe": "vite build --config vite.iframe.config.ts",
+    "build:lib": "pnpm build:widget",
     "preview": "vite preview",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix --cache",

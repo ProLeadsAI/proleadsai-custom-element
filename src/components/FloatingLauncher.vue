@@ -1,7 +1,7 @@
 <template>
   <!-- Floating Button - Horizontal (bottom positions) -->
   <button
-    v-if="!isOpen && !isEdgePosition"
+    v-if="showDefaultLauncher && !isOpen && !isEdgePosition"
     @click="openPanel"
     class="fixed z-[99997] flex items-center gap-2 px-5 py-3 text-sm font-semibold rounded-full shadow-lg transition-all hover:scale-105 cursor-pointer max-w-[calc(100vw-2rem)] whitespace-nowrap"
     :style="buttonStyle"
@@ -12,7 +12,7 @@
 
   <!-- Floating Button - Vertical (edge positions) -->
   <button
-    v-if="!isOpen && isEdgePosition"
+    v-if="showDefaultLauncher && !isOpen && isEdgePosition"
     @click="openPanel"
     class="fixed z-[99997] flex items-center gap-2 px-4 py-3 text-sm font-semibold shadow-lg transition-all hover:scale-105 cursor-pointer"
     :class="edgeButtonClass"
@@ -70,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import RoofEstimateHero from './RoofEstimateHero.vue'
 import { getConfig } from '@/utils/config'
 
@@ -84,6 +84,7 @@ const config = getConfig()
 const isOpen = ref(false)
 
 const teleportTarget = computed(() => window.__PROLEADSAI_TELEPORT__ || null)
+const showDefaultLauncher = computed(() => !config.hideDefaultLauncher)
 
 const isEdgePosition = computed(() => {
   const pos = props.position || config.buttonPosition
@@ -166,14 +167,54 @@ function handleModalClose() {
   document.body.style.overflow = ''
 }
 
-if (typeof window !== 'undefined') {
-  window.addEventListener('proleadsai:modal-close', handleModalClose)
+function handleOpenSearch() {
+  openPanel()
 }
+
+function handleExternalTriggerClick(event: Event) {
+  if (!config.openTriggerId || !(event.target instanceof Element))
+    return
+
+  const escapedId = typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+    ? CSS.escape(config.openTriggerId)
+    : config.openTriggerId.replace(/"/g, '\\"')
+
+  if (event.target.closest(`#${escapedId}`)) {
+    event.preventDefault()
+    openPanel()
+  }
+}
+
+function handleWindowMessage(event: MessageEvent) {
+  const messageType = typeof event.data === 'string'
+    ? event.data
+    : event.data?.type
+
+  if (messageType === 'proleadsai:open-search') {
+    openPanel()
+  }
+}
+
+onMounted(() => {
+  if (typeof window === 'undefined')
+    return
+
+  window.addEventListener('proleadsai:modal-close', handleModalClose)
+  window.addEventListener('proleadsai:open-search', handleOpenSearch)
+  window.addEventListener('message', handleWindowMessage)
+
+  if (config.openTriggerId) {
+    document.addEventListener('click', handleExternalTriggerClick)
+  }
+})
 
 onUnmounted(() => {
   if (typeof window !== 'undefined') {
     window.removeEventListener('proleadsai:modal-close', handleModalClose)
+    window.removeEventListener('proleadsai:open-search', handleOpenSearch)
+    window.removeEventListener('message', handleWindowMessage)
   }
+  document.removeEventListener('click', handleExternalTriggerClick)
   document.body.style.overflow = ''
 })
 </script>

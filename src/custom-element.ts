@@ -33,6 +33,8 @@ class RoofEstimatorElement extends HTMLElement {
       orgId: this.getAttribute('org-id') || '',
       apiBaseUrl: this.getAttribute('api-url') || 'https://app.proleadsai.com/api',
       disableWhenUnavailable: this.hasAttribute('disable-when-unavailable') && this.getAttribute('disable-when-unavailable') !== 'false',
+      openTriggerId: this.getAttribute('open-trigger-id') || '',
+      hideDefaultLauncher: this.hasAttribute('hide-default-launcher') && this.getAttribute('hide-default-launcher') !== 'false',
       googleMapsApiKey: this.getAttribute('google-maps-api-key') || '',
       primaryColor: this.getAttribute('primary-color') || '#facc15',
       textColor: this.getAttribute('text-color') || '#1c1917',
@@ -150,6 +152,7 @@ declare global {
   interface Window {
     ProLeadsAI: {
       mount: (selector: string | HTMLElement, options?: Record<string, unknown>) => void
+      openSearch: () => void
     }
   }
 }
@@ -167,6 +170,9 @@ window.ProLeadsAI = {
     window.__PROLEADSAI_CONFIG__ = {
       orgId: (options.orgId as string) || (options.teamId as string) || '',
       apiBaseUrl: (options.apiUrl as string) || 'https://next.proleadsai.com/api',
+      disableWhenUnavailable: Boolean(options.disableWhenUnavailable),
+      openTriggerId: (options.openTriggerId as string) || '',
+      hideDefaultLauncher: Boolean(options.hideDefaultLauncher),
       googleMapsApiKey: (options.googleMapsApiKey as string) || '',
       primaryColor: (options.primaryColor as string) || '#1d4ed8',
     }
@@ -174,5 +180,8 @@ window.ProLeadsAI = {
     // Create and append the custom element
     const element = document.createElement('roof-estimator')
     container.appendChild(element)
+  },
+  openSearch() {
+    window.dispatchEvent(new CustomEvent('proleadsai:open-search'))
   },
 }

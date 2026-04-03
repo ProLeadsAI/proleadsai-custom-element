@@ -6,6 +6,7 @@ It supports:
 
 - **Floating button + side panel** mode
 - **Inline embed** mode
+- **Hosted iframe page** mode
 - Theme controls (colors, fonts, hero image)
 - Safe, optional font-size overrides
 
@@ -46,6 +47,7 @@ This outputs:
 
 - `dist/proleadsai-widget.iife.js`
 - `dist/proleadsai-widget.css`
+- `dist/iframe.html`
 
 Host those two files somewhere public (your site, S3, CDN, etc.).
 
@@ -106,6 +108,8 @@ The `<roof-estimator>` custom element reads the following attributes (see `src/c
 | Attribute | Required | Description | Default |
 |---|---:|---|---|
 | `display-mode` | No | `inline` or `floating` | `inline` |
+| `open-trigger-id` | No | ID of a button in the same document that should open the floating search panel | `""` |
+| `hide-default-launcher` | No | Hide the widget's own floating button when using your own trigger | `false` |
 
 ### Floating button settings (only used when `display-mode="floating"`)
 
@@ -184,6 +188,8 @@ Notes:
   org-id="YOUR_ORG_ID"
   display-mode="floating"
   disable-when-unavailable="true"
+  open-trigger-id="roof-estimate-trigger"
+  hide-default-launcher="true"
   button-text="Get Roof Estimate"
   button-emoji="🏠"
   button-position="bottom-right"
@@ -191,6 +197,28 @@ Notes:
   text-color="#1d1616"
   heading="Free Roof Estimate Instantly"
 ></roof-estimator>
+```
+
+### Example: external button opens the floating search
+
+```html
+<button id="roof-estimate-trigger">Check My Roof</button>
+
+<roof-estimator
+  org-id="YOUR_ORG_ID"
+  display-mode="floating"
+  open-trigger-id="roof-estimate-trigger"
+  hide-default-launcher="true"
+  disable-when-unavailable="true"
+></roof-estimator>
+```
+
+You can also open it from JavaScript:
+
+```js
+window.dispatchEvent(new CustomEvent('proleadsai:open-search'))
+// or
+window.ProLeadsAI?.openSearch()
 ```
 
 ## Availability Gating
@@ -220,6 +248,137 @@ Recommended setup:
 
 ---
 
+## Iframe Embed
+
+This repo also builds a hosted iframe page:
+
+- `dist/iframe.html`
+
+The iframe page reads the same widget config from query params. It accepts both kebab-case and camelCase keys.
+
+### Modes
+
+- `display-mode=inline`
+  The widget content renders immediately inside the iframe.
+- `display-mode=floating`
+  The iframe initially shows only the floating launcher button. Clicking it opens the slide-out panel inside the iframe.
+
+Important behavior:
+
+- In floating mode, the launcher is positioned relative to the iframe viewport, not the parent page.
+- If the iframe is small or clipped, the floating button is also confined to that iframe area.
+- For full-page floating behavior outside the iframe boundary, use the custom element version instead of the hosted iframe.
+
+Example:
+
+```html
+<iframe
+  src="https://YOUR-CDN/iframe.html?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=inline&heading=Free%20Roof%20Estimate%20Instantly&primary-color=%23ffd400&disable-when-unavailable=true"
+  width="100%"
+  height="900"
+  style="border:0;"
+></iframe>
+```
+
+### WordPress / Hosted Production Examples
+
+If your hosted widget domain is `widgets.proleadsai.com`, these are the canonical iframe URLs to hand to the WordPress plugin.
+
+Inline example:
+
+```text
+https://widgets.proleadsai.com/iframe.html?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=inline&heading=Free%20Roof%20Estimate%20Instantly&subheading=Enter%20your%20address%20to%20see%20your%20roof%20size%2C%20estimated%20cost%2C%20and%20steepness.&primary-color=%23ffd400&text-color=%231d1616&disable-when-unavailable=true
+```
+
+Floating example:
+
+```text
+https://widgets.proleadsai.com/iframe.html?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=floating&button-text=Get%20Roof%20Estimate&button-emoji=%F0%9F%8F%A0&button-position=bottom-right&heading=Free%20Roof%20Estimate%20Instantly&primary-color=%23ffd400&text-color=%231d1616&disable-when-unavailable=true
+```
+
+Minimal inline example:
+
+```text
+https://widgets.proleadsai.com/iframe.html?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=inline
+```
+
+Minimal floating example:
+
+```text
+https://widgets.proleadsai.com/iframe.html?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=floating
+```
+
+Common iframe query params:
+
+- `org-id` or `orgId`
+- `api-url` or `apiUrl`
+- `display-mode` or `displayMode`
+- `disable-when-unavailable` or `disableWhenUnavailable`
+- `open-trigger-id` or `openTriggerId`
+- `hide-default-launcher` or `hideDefaultLauncher`
+- `heading`
+- `subheading`
+- `primary-color` or `primaryColor`
+- `text-color` or `textColor`
+- `button-text` or `buttonText`
+- `button-emoji` or `buttonEmoji`
+- `button-position` or `buttonPosition`
+- `bg-style` or `bgStyle`
+- `bg-color` or `bgColor`
+- `hero-image` or `heroImage`
+- `heading-font` or `headingFont`
+- `heading-color` or `headingColor`
+- `text-font` or `textFont`
+- `text-color-shortcode` or `textColorShortcode`
+- `heading-size` or `headingSize`
+- `text-size` or `textSize`
+
+### WordPress Prop Mapping
+
+Recommended WordPress-side fields to map into the iframe URL:
+
+- `org-id`
+  The ProLeadsAI organization ID.
+- `api-url`
+  Usually `https://app.proleadsai.com/api`.
+- `display-mode`
+  Use `inline` for embedded content, or `floating` for launcher-plus-panel mode.
+- `disable-when-unavailable`
+  Recommended as `true`.
+- `heading`
+  Main headline shown in inline mode and inside the floating panel.
+- `subheading`
+  Secondary text under the heading.
+- `primary-color`
+  Main accent color, including the floating button background.
+- `text-color`
+  Floating button text color.
+- `button-text`
+  Floating launcher label.
+- `button-emoji`
+  Floating launcher emoji.
+- `button-position`
+  One of `bottom-right`, `bottom-left`, `bottom-center`, `left-edge`, `right-edge`.
+- `bg-style` and `bg-color`
+  Panel/background appearance.
+- `hero-image`
+  Custom hero image URL, or `none`.
+- `heading-font`, `heading-color`, `heading-size`
+  Heading typography.
+- `text-font`, `text-color-shortcode`, `text-size`
+  Body typography.
+
+Important note:
+
+- `open-trigger-id` only works for buttons inside the same document as the widget.
+- If you are embedding the hosted iframe and want a parent-page button to open it, send a postMessage to the iframe:
+
+```js
+iframeEl.contentWindow?.postMessage({ type: 'proleadsai:open-search' }, '*')
+```
+
+---
+
 ## Adding New Props
 
 To add a new prop to the widget:
@@ -231,6 +390,8 @@ export interface WidgetConfig {
   orgId: string
   apiBaseUrl: string
   disableWhenUnavailable: boolean
+  openTriggerId: string
+  hideDefaultLauncher: boolean
   googleMapsApiKey: string
   primaryColor: string
   newProp: string  // Add your new prop
@@ -245,6 +406,8 @@ connectedCallback() {
     orgId: this.getAttribute('org-id') || '',
     apiBaseUrl: this.getAttribute('api-url') || 'https://app.proleadsai.com/api',
     disableWhenUnavailable: this.hasAttribute('disable-when-unavailable') && this.getAttribute('disable-when-unavailable') !== 'false',
+    openTriggerId: this.getAttribute('open-trigger-id') || '',
+    hideDefaultLauncher: this.hasAttribute('hide-default-launcher') && this.getAttribute('hide-default-launcher') !== 'false',
     googleMapsApiKey: this.getAttribute('google-maps-api-key') || '',
     primaryColor: this.getAttribute('primary-color') || '#1d4ed8',
     newProp: this.getAttribute('new-prop') || 'default-value',  // Add here
@@ -261,6 +424,8 @@ panelElement.innerHTML = `
     org-id="${config.orgId || ''}"
     api-url="${config.apiUrl || 'https://app.proleadsai.com/api'}"
     disable-when-unavailable="${config.disableWhenUnavailable ? 'true' : 'false'}"
+    open-trigger-id="${config.openTriggerId || ''}"
+    hide-default-launcher="${config.hideDefaultLauncher ? 'true' : 'false'}"
     google-maps-api-key="${config.googleMapsApiKey || ''}"
     primary-color="${config.primaryColor || '#1d4ed8'}"
     new-prop="${config.newProp || ''}"
@@ -275,6 +440,8 @@ wp_localize_script( $this->plugin_name . '-widget-launcher', 'proleadsaiWidget',
   'apiUrl' => 'https://app.proleadsai.com/api',
   'orgId' => $settings['team_id'] ?? '',
   'disableWhenUnavailable' => true,
+  'openTriggerId' => 'roof-estimate-trigger',
+  'hideDefaultLauncher' => true,
   'googleMapsApiKey' => $settings['google_maps_api_key'] ?? '',
   'primaryColor' => $settings['primary_color'] ?? '#1d4ed8',
   'newProp' => $settings['new_prop'] ?? '',  // Add here
@@ -292,6 +459,7 @@ pnpm build
 This outputs:
 - `dist/proleadsai-widget.iife.js` - The widget JavaScript
 - `dist/proleadsai-widget.css` - The widget styles (Tailwind CSS)
+- `dist/iframe.html` - Hosted iframe page
 
 ---
 
@@ -345,6 +513,7 @@ http://localhost:5173/?orgId=YOUR_ORG_ID
 ```
 
 The config utility (`src/utils/config.ts`) will read `orgId` and `teamId` from URL params as a fallback.
+It also supports the other widget props via query params for the hosted iframe page.
 
 ---
 
@@ -367,6 +536,7 @@ The widget dispatches custom events:
 | Event | Description |
 |-------|-------------|
 | `proleadsai:modal-open` | Fired when the results modal opens (used to close the slide-out panel) |
+| `proleadsai:open-search` | Listen for this on `window` to open the floating search panel |
 
 ---
 
