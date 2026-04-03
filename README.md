@@ -47,7 +47,7 @@ This outputs:
 
 - `dist/proleadsai-widget.iife.js`
 - `dist/proleadsai-widget.css`
-- `dist/iframe.html`
+- `dist/iframe` route assets
 
 Host those two files somewhere public (your site, S3, CDN, etc.).
 
@@ -250,9 +250,9 @@ Recommended setup:
 
 ## Iframe Embed
 
-This repo also builds a hosted iframe page:
+This repo also builds a hosted iframe route:
 
-- `dist/iframe.html`
+- `/iframe`
 
 The iframe page reads the same widget config from query params. It accepts both kebab-case and camelCase keys.
 
@@ -273,7 +273,7 @@ Example:
 
 ```html
 <iframe
-  src="https://YOUR-CDN/iframe.html?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=inline&heading=Free%20Roof%20Estimate%20Instantly&primary-color=%23ffd400&disable-when-unavailable=true"
+  src="https://YOUR-CDN/iframe?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=inline&heading=Free%20Roof%20Estimate%20Instantly&primary-color=%23ffd400&disable-when-unavailable=true"
   width="100%"
   height="900"
   style="border:0;"
@@ -287,25 +287,25 @@ If your hosted widget domain is `widgets.proleadsai.com`, these are the canonica
 Inline example:
 
 ```text
-https://widgets.proleadsai.com/iframe.html?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=inline&heading=Free%20Roof%20Estimate%20Instantly&subheading=Enter%20your%20address%20to%20see%20your%20roof%20size%2C%20estimated%20cost%2C%20and%20steepness.&primary-color=%23ffd400&text-color=%231d1616&disable-when-unavailable=true
+https://widgets.proleadsai.com/iframe?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=inline&heading=Free%20Roof%20Estimate%20Instantly&subheading=Enter%20your%20address%20to%20see%20your%20roof%20size%2C%20estimated%20cost%2C%20and%20steepness.&primary-color=%23ffd400&text-color=%231d1616&disable-when-unavailable=true
 ```
 
 Floating example:
 
 ```text
-https://widgets.proleadsai.com/iframe.html?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=floating&button-text=Get%20Roof%20Estimate&button-emoji=%F0%9F%8F%A0&button-position=bottom-right&heading=Free%20Roof%20Estimate%20Instantly&primary-color=%23ffd400&text-color=%231d1616&disable-when-unavailable=true
+https://widgets.proleadsai.com/iframe?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=floating&button-text=Get%20Roof%20Estimate&button-emoji=%F0%9F%8F%A0&button-position=bottom-right&heading=Free%20Roof%20Estimate%20Instantly&primary-color=%23ffd400&text-color=%231d1616&disable-when-unavailable=true
 ```
 
 Minimal inline example:
 
 ```text
-https://widgets.proleadsai.com/iframe.html?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=inline
+https://widgets.proleadsai.com/iframe?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=inline
 ```
 
 Minimal floating example:
 
 ```text
-https://widgets.proleadsai.com/iframe.html?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=floating
+https://widgets.proleadsai.com/iframe?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=floating
 ```
 
 Common iframe query params:
@@ -459,25 +459,29 @@ pnpm build
 This outputs:
 - `dist/proleadsai-widget.iife.js` - The widget JavaScript
 - `dist/proleadsai-widget.css` - The widget styles (Tailwind CSS)
-- `dist/iframe.html` - Hosted iframe page
+- `dist/iframe.html` plus `dist/assets/*` - The hosted iframe app files
 
 ---
 
 ## Deploying to WordPress Plugin
 
-After building, copy the files to the WordPress plugin:
+The WordPress plugin now uses the hosted iframe implementation and does not bundle the old shadow-DOM widget assets.
 
-```sh
-# From this directory
-cp dist/proleadsai-widget.iife.js ../proleadsai-wppb/public/js/proleadsai-widget-ce.js
-cp dist/proleadsai-widget.css ../proleadsai-wppb/public/css/proleadsai-widget.css
+Deploy the full `dist/` directory to your widget host, for example `https://widgets.proleadsai.com`, so the plugin can load:
+
+```text
+https://widgets.proleadsai.com/iframe?...query-params...
 ```
 
-Or run this one-liner:
+Typical deployment flow:
 
 ```sh
-pnpm build && cp dist/proleadsai-widget.iife.js ../proleadsai-wppb/public/js/proleadsai-widget-ce.js && cp dist/proleadsai-widget.css ../proleadsai-wppb/public/css/proleadsai-widget.css
+pnpm build
 ```
+
+Then publish the generated `dist/` contents to your widget host.
+
+The WordPress plugin only needs its own launcher script and iframe URL configuration.
 
 ---
 
@@ -517,15 +521,14 @@ It also supports the other widget props via query params for the hosted iframe p
 
 ---
 
-## WordPress Plugin Files
+## WordPress Plugin Integration
 
-The WordPress plugin expects these files:
+The WordPress plugin uses:
 
 | WordPress Path | Source |
 |----------------|--------|
-| `public/js/proleadsai-widget-ce.js` | `dist/proleadsai-widget.iife.js` |
-| `public/css/proleadsai-widget.css` | `dist/proleadsai-widget.css` |
 | `public/js/proleadsai-widget-launcher.js` | Launcher script (opens slide-out panel) |
+| Hosted iframe URL | `https://widgets.proleadsai.com/iframe?...` |
 
 ---
 
