@@ -6,7 +6,7 @@ import App from './App.vue'
 ;(window as any).__PROLEADSAI_CONFIG__ = {
   orgId: '019b1802-0461-728a-845f-0bbd4922c724',
   apiBaseUrl: 'http://0.0.0.0:3000/api',
-  googleMapsApiKey: '',
+  googleMapsApiKey: 'AIzaSyAnGEN6KNE2YkDj8DbV4y2LCKFQgmNOSZ0',
   primaryColor: '#ffd400',
   textColor: '#1d1616',
   displayMode: 'inline',

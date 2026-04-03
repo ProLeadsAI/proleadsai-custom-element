@@ -36,7 +36,7 @@ const DEFAULT_CONFIG: WidgetConfig = {
   disableWhenUnavailable: false,
   openTriggerId: '',
   hideDefaultLauncher: false,
-  googleMapsApiKey: '',
+  googleMapsApiKey: 'AIzaSyAnGEN6KNE2YkDj8DbV4y2LCKFQgmNOSZ0',
   primaryColor: '#facc15',
   textColor: '#1c1917',
   displayMode: 'inline',

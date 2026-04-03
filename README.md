@@ -101,7 +101,7 @@ The `<roof-estimator>` custom element reads the following attributes (see `src/c
 | `org-id` | Yes | ProLeadsAI organization/team id | `""` |
 | `api-url` | No | API base URL | `https://app.proleadsai.com/api` |
 | `disable-when-unavailable` | No | If set, the widget checks the app API first and hides/blocks itself when the org has no credits left | not set |
-| `google-maps-api-key` | No | Google Maps key for Places Autocomplete | `""` |
+| `google-maps-api-key` | No | Google Maps key for Places Autocomplete | Hosted widget default |
 
 ### Display mode
 
