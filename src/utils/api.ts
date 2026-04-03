@@ -124,9 +124,13 @@ export async function submitRoofEstimateForm(data: {
   coordinates?: { lat: number; lng: number }
 }): Promise<FormSubmitResult> {
   const config = getConfig()
-  await assertWidgetAvailable()
   const sessionId = getSessionId()
   const currentToolSessionId = getToolSessionId()
+
+  // If there is no active search flow yet, block new submissions when the widget is unavailable.
+  if (!currentToolSessionId) {
+    await assertWidgetAvailable()
+  }
 
   const url = `${config.apiBaseUrl}/organization/${config.orgId}/forms/submit`
 

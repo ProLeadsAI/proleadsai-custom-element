@@ -46,6 +46,19 @@ if (typeof window !== 'undefined' && window.parent !== window) {
     window.requestAnimationFrame(postHeight)
   }
 
+  window.addEventListener('proleadsai:availability-changed', ((event: Event) => {
+    const customEvent = event as CustomEvent<{ widgetEnabled?: boolean }>
+    window.parent.postMessage(
+      {
+        type: 'proleadsai:availability-changed',
+        widgetEnabled: Boolean(customEvent.detail?.widgetEnabled),
+      },
+      '*'
+    )
+
+    scheduleHeightPost()
+  }) as EventListener)
+
   window.addEventListener('load', scheduleHeightPost)
   window.addEventListener('resize', scheduleHeightPost)
 

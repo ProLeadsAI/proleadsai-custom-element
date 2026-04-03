@@ -99,7 +99,7 @@ The `<roof-estimator>` custom element reads the following attributes (see `src/c
 | Attribute | Required | Description | Default |
 |---|---:|---|---|
 | `org-id` | Yes | ProLeadsAI organization/team id | `""` |
-| `api-url` | No | API base URL | `https://app.proleadsai.com/api` |
+| `api-url` | No | API base URL. Usually omit this for the hosted widget. | `https://app.proleadsai.com/api` |
 | `disable-when-unavailable` | No | If set, the widget checks the app API first and hides/blocks itself when the org has no credits left | not set |
 | `google-maps-api-key` | No | Google Maps key for Places Autocomplete | Hosted widget default |
 
@@ -273,7 +273,7 @@ Example:
 
 ```html
 <iframe
-  src="https://YOUR-CDN/iframe?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=inline&heading=Free%20Roof%20Estimate%20Instantly&primary-color=%23ffd400&disable-when-unavailable=true"
+  src="https://YOUR-CDN/iframe?org-id=YOUR_ORG_ID&display-mode=inline&heading=Free%20Roof%20Estimate%20Instantly&primary-color=%23ffd400&disable-when-unavailable=true"
   width="100%"
   height="900"
   style="border:0;"
@@ -287,25 +287,25 @@ If your hosted widget domain is `widgets.proleadsai.com`, these are the canonica
 Inline example:
 
 ```text
-https://widgets.proleadsai.com/iframe?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=inline&heading=Free%20Roof%20Estimate%20Instantly&subheading=Enter%20your%20address%20to%20see%20your%20roof%20size%2C%20estimated%20cost%2C%20and%20steepness.&primary-color=%23ffd400&text-color=%231d1616&disable-when-unavailable=true
+https://widgets.proleadsai.com/iframe?org-id=YOUR_ORG_ID&display-mode=inline&heading=Free%20Roof%20Estimate%20Instantly&subheading=Enter%20your%20address%20to%20see%20your%20roof%20size%2C%20estimated%20cost%2C%20and%20steepness.&primary-color=%23ffd400&text-color=%231d1616&disable-when-unavailable=true
 ```
 
 Floating example:
 
 ```text
-https://widgets.proleadsai.com/iframe?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=floating&button-text=Get%20Roof%20Estimate&button-emoji=%F0%9F%8F%A0&button-position=bottom-right&heading=Free%20Roof%20Estimate%20Instantly&primary-color=%23ffd400&text-color=%231d1616&disable-when-unavailable=true
+https://widgets.proleadsai.com/iframe?org-id=YOUR_ORG_ID&display-mode=floating&button-text=Get%20Roof%20Estimate&button-emoji=%F0%9F%8F%A0&button-position=bottom-right&heading=Free%20Roof%20Estimate%20Instantly&primary-color=%23ffd400&text-color=%231d1616&disable-when-unavailable=true
 ```
 
 Minimal inline example:
 
 ```text
-https://widgets.proleadsai.com/iframe?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=inline
+https://widgets.proleadsai.com/iframe?org-id=YOUR_ORG_ID&display-mode=inline
 ```
 
 Minimal floating example:
 
 ```text
-https://widgets.proleadsai.com/iframe?org-id=YOUR_ORG_ID&api-url=https%3A%2F%2Fapp.proleadsai.com%2Fapi&display-mode=floating
+https://widgets.proleadsai.com/iframe?org-id=YOUR_ORG_ID&display-mode=floating
 ```
 
 Common iframe query params:

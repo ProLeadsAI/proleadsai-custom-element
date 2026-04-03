@@ -53,6 +53,7 @@ import RoofResultModal from './RoofResultModal.vue'
 import { loadGoogleMapsScript } from '@/utils/maps'
 import { getConfig, getSessionId } from '@/utils/config'
 import { getRoofEstimate, type RoofEstimateResult } from '@/utils/api'
+import { getWidgetAvailability } from '@/utils/availability'
 
 // Get config lazily to ensure custom element has set it
 const getConfigValue = () => getConfig()
@@ -172,6 +173,7 @@ const estimateLoading = ref(false)
 const estimateError = ref('')
 const estimateResult = ref<RoofEstimateResult | null>(null)
 const showModal = ref(false)
+const shouldRefreshAvailabilityOnClose = ref(false)
 
 function notifyParentModalState(open: boolean) {
   if (typeof window === 'undefined' || window.parent === window)
@@ -337,6 +339,11 @@ onMounted(() => {
 watch(showModal, (isOpen) => {
   window.dispatchEvent(new CustomEvent(isOpen ? 'proleadsai:modal-open' : 'proleadsai:modal-close'))
   notifyParentModalState(isOpen)
+
+  if (!isOpen && shouldRefreshAvailabilityOnClose.value) {
+    shouldRefreshAvailabilityOnClose.value = false
+    void getWidgetAvailability(true)
+  }
 })
 
 // Handle the Get Estimate button click
@@ -379,6 +386,7 @@ const handleEstimateClick = async () => {
 
     const response = await getRoofEstimate(params)
     estimateResult.value = response
+    shouldRefreshAvailabilityOnClose.value = true
     console.log('API response:', response)
   } catch (error) {
     console.error('Error getting roof estimate:', error)
