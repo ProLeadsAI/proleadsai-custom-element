@@ -48,12 +48,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted, watch, computed, nextTick, onMounted } from 'vue'
+import { ref, onUnmounted, watch, computed, onMounted } from 'vue'
 import RoofResultModal from './RoofResultModal.vue'
 import { loadGoogleMapsScript } from '@/utils/maps'
 import { getConfig, getSessionId } from '@/utils/config'
 import { getRoofEstimate, type RoofEstimateResult } from '@/utils/api'
 import { getWidgetAvailability } from '@/utils/availability'
+import { postToTrustedParent } from '@/utils/messaging'
+import { emitEstimatorEvent } from '@/utils/analytics'
+
+interface RoofPlaceAddressComponent {
+  types?: string[]
+  longText?: string
+  shortText?: string
+}
+
+interface RoofSelectedPlace {
+  formattedAddress?: string
+  location?: { lat: number | (() => number); lng: number | (() => number) }
+  addressComponents?: RoofPlaceAddressComponent[]
+  fetchFields: (options: { fields: string[] }) => Promise<void>
+}
+
+interface RoofPlacePredictionSelectEvent extends Event {
+  placePrediction: { toPlace: () => RoofSelectedPlace }
+}
 
 // Get config lazily to ensure custom element has set it
 const getConfigValue = () => getConfig()
@@ -179,9 +198,9 @@ function notifyParentModalState(open: boolean) {
   if (typeof window === 'undefined' || window.parent === window)
     return
 
-  window.parent.postMessage({
+  postToTrustedParent({
     type: open ? 'proleadsai:modal-open' : 'proleadsai:modal-close'
-  }, '*')
+  })
 }
 
 // Override attachShadow to inject custom styles into PlaceAutocompleteElement
@@ -253,8 +272,7 @@ const initPlaces = async () => {
 
     // Create the PlaceAutocompleteElement
     placeAutocompleteEl = new window.google.maps.places.PlaceAutocompleteElement({
-      types: ['address'],
-      componentRestrictions: { country: 'us' },
+      includedRegionCodes: [config.countryCode || 'us'],
     })
 
     // Append to our mount container
@@ -270,14 +288,15 @@ const initPlaces = async () => {
             input.placeholder = 'Search your address'
           }
         }
-      } catch (e) {
+      } catch {
         // Ignore if shadow DOM access fails
       }
     }, 100)
 
     // Listen for place selection
-    placeAutocompleteEl.addEventListener('gmp-select', async ({ placePrediction }: any) => {
+    placeAutocompleteEl.addEventListener('gmp-select', async (event: Event) => {
       try {
+        const { placePrediction } = event as RoofPlacePredictionSelectEvent
         const place = placePrediction.toPlace()
         await place.fetchFields({ fields: ['displayName', 'formattedAddress', 'location', 'addressComponents'] })
 
@@ -290,11 +309,11 @@ const initPlaces = async () => {
 
         // Parse address components
         const getComponent = (type: string) => {
-          const comp = addressComponents.find((c: any) => c.types?.includes(type))
+          const comp = addressComponents.find(component => component.types?.includes(type))
           return comp?.longText || comp?.shortText || ''
         }
         const getComponentShort = (type: string) => {
-          const comp = addressComponents.find((c: any) => c.types?.includes(type))
+          const comp = addressComponents.find(component => component.types?.includes(type))
           return comp?.shortText || comp?.longText || ''
         }
 
@@ -325,14 +344,17 @@ const initPlaces = async () => {
         handleEstimateClick()
       } catch (error) {
         console.error('[ProLeadsAI] Error handling place selection:', error)
+        emitEstimatorEvent('proleadsai_estimator_error', { stage: 'roofing_address' })
       }
     })
   } catch (error) {
     console.error('[ProLeadsAI] Error initializing Places:', error)
+    emitEstimatorEvent('proleadsai_estimator_error', { stage: 'roofing_places' })
   }
 }
 
 onMounted(() => {
+  emitEstimatorEvent('proleadsai_estimator_open')
   initPlaces()
 })
 
@@ -357,6 +379,7 @@ const handleEstimateClick = async () => {
 
   showModal.value = true
   estimateLoading.value = true
+  emitEstimatorEvent('proleadsai_address_submit', { stage: 'roofing_address' })
 
   try {
     let params: {
@@ -374,6 +397,7 @@ const handleEstimateClick = async () => {
       params = {
         lat: selectedAddress.value.coordinates.lat,
         lng: selectedAddress.value.coordinates.lng,
+        address: selectedAddress.value.address,
         streetAddress: selectedAddress.value.streetAddress,
         addressLocality: selectedAddress.value.addressLocality,
         addressRegion: selectedAddress.value.addressRegion,
@@ -387,11 +411,17 @@ const handleEstimateClick = async () => {
     const response = await getRoofEstimate(params)
     estimateResult.value = response
     shouldRefreshAvailabilityOnClose.value = true
+    emitEstimatorEvent('proleadsai_estimate_view', {
+      stage: 'roofing_estimate',
+      roofAreaSqFt: response.roofAreaSqFt,
+      roofSquares: response.roofSquares,
+    })
     console.log('API response:', response)
   } catch (error) {
     console.error('Error getting roof estimate:', error)
     estimateError.value =
       error instanceof Error ? error.message : 'Failed to get your roof estimate. Please try again.'
+    emitEstimatorEvent('proleadsai_estimator_error', { stage: 'roofing_estimate' })
   } finally {
     estimateLoading.value = false
   }

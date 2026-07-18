@@ -69,13 +69,22 @@ const roofPolygon = ref<any>(null)
 
 const markerHistory = ref<Array<{ lat: number; lng: number }>>([])
 
+interface GoogleMapMarkerOverlay {
+  setMap: (map: unknown | null) => void
+  setVisible: (visible: boolean) => void
+}
+
+interface GoogleMapLineOverlay {
+  setMap: (map: unknown | null) => void
+}
+
 const moveCount = computed(() => Math.max(0, markerHistory.value.length - 1))
 
 onMounted(async () => {
   const config = getConfig()
 
   try {
-    await loadGoogleMapsScript(config.googleMapsApiKey, ['places'])
+    await loadGoogleMapsScript(config.googleMapsApiKey)
     apiLoaded.value = true
 
     if (props.coordinates) {
@@ -153,8 +162,8 @@ function createMarker(position: { lat: number; lng: number }) {
 
 // Store animation elements for cleanup
 const animationElements = ref<{
-  pointMarkers: any[]
-  lineSegments: any[]
+  pointMarkers: GoogleMapMarkerOverlay[]
+  lineSegments: GoogleMapLineOverlay[]
 }>({ pointMarkers: [], lineSegments: [] })
 
 function drawRoofOutline(points: Array<{ lat: number; lng: number }>) {
@@ -175,7 +184,7 @@ function drawRoofOutline(points: Array<{ lat: number; lng: number }>) {
   const fillColor = '#4CAF50'
   
   // Create markers for each point (all initially invisible)
-  const pointMarkers: any[] = []
+  const pointMarkers: GoogleMapMarkerOverlay[] = []
   points.forEach((point) => {
     const marker = new google.maps.Marker({
       position: { lat: point.lat, lng: point.lng },
@@ -196,7 +205,7 @@ function drawRoofOutline(points: Array<{ lat: number; lng: number }>) {
   animationElements.value.pointMarkers = pointMarkers
   
   // Create line segments (initially not on map)
-  const lineSegments: any[] = []
+  const lineSegments: GoogleMapLineOverlay[] = []
   for (let i = 0; i < points.length; i++) {
     const from = points[i]!
     const to = points[(i + 1) % points.length]!
@@ -240,10 +249,10 @@ function drawRoofOutline(points: Array<{ lat: number; lng: number }>) {
       
       if (stepType === 0) {
         // Show point
-        pointMarkers[pointIndex].setVisible(true)
+        pointMarkers[pointIndex]?.setVisible(true)
       } else {
         // Show line
-        lineSegments[pointIndex].setMap(map.value)
+        lineSegments[pointIndex]?.setMap(map.value)
       }
       
       currentStep++

@@ -3,6 +3,7 @@ declare global {
   interface Window {
     google: any
     __PROLEADSAI_CONFIG__?: {
+      estimatorType?: 'roofing' | 'solar'
       orgId?: string
       apiBaseUrl?: string
       disableWhenUnavailable?: boolean | string
@@ -26,13 +27,23 @@ declare global {
       headingColor?: string
       textFont?: string
       textColorShortcode?: string
+      headingSize?: string
+      textSize?: string
+      countryCode?: string
+      source?: string
+      hideBranding?: boolean | string
+      parentOrigin?: string
+      analyticsConsent?: boolean | string
     }
     sessionId?: string
     __PROLEADSAI_SHADOW_ROOT__?: ShadowRoot
     __PROLEADSAI_TELEPORT__?: HTMLElement
+    dataLayer?: Array<Record<string, unknown>>
+    ProLeadsAIAnalyticsConsent?: boolean
     ProLeadsAI?: {
       mount: (selector: string | HTMLElement, options?: Record<string, unknown>) => void
       openSearch: () => void
+      openEstimator?: (type?: 'roofing' | 'solar') => void
     }
   }
 }

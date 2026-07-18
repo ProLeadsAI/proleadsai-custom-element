@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import RoofEstimateHero from './components/RoofEstimateHero.vue'
+import SolarEstimateHero from './components/SolarEstimateHero.vue'
 import FloatingLauncher from './components/FloatingLauncher.vue'
 import { getConfig } from './utils/config'
 import { getWidgetAvailability } from './utils/availability'
@@ -10,8 +11,8 @@ const widgetVisible = ref(true)
 
 // Display mode: 'inline' (default) or 'floating'
 const displayMode = computed(() => config.displayMode || 'inline')
-const buttonText = computed(() => config.buttonText || 'Get Roof Estimate')
-const buttonEmoji = computed(() => config.buttonEmoji ?? '🏠')
+const buttonText = computed(() => config.buttonText || (config.estimatorType === 'solar' ? 'See Solar Potential' : 'Get Roof Estimate'))
+const buttonEmoji = computed(() => config.buttonEmoji ?? (config.estimatorType === 'solar' ? '☀️' : '🏠'))
 const buttonPosition = computed(() => config.buttonPosition || 'bottom-right')
 
 function handleAvailabilityChanged(event: Event) {
@@ -46,6 +47,7 @@ onUnmounted(() => {
   />
   
   <!-- Inline mode: renders form directly -->
+  <SolarEstimateHero v-else-if="config.estimatorType === 'solar'" />
   <RoofEstimateHero v-else />
   </template>
 </template>

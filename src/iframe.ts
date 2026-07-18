@@ -1,6 +1,10 @@
 import './style.css'
 import { createApp } from 'vue'
 import App from './App.vue'
+import { getConfig, loadConfiguredFonts } from './utils/config'
+import { postToTrustedParent } from './utils/messaging'
+
+loadConfiguredFonts(getConfig())
 
 createApp(App).mount('#app')
 
@@ -28,13 +32,10 @@ if (typeof window !== 'undefined' && window.parent !== window) {
     }
 
     frameHeight = nextHeight
-    window.parent.postMessage(
-      {
-        type: 'proleadsai:iframe-resize',
-        height: nextHeight,
-      },
-      '*'
-    )
+    postToTrustedParent({
+      type: 'proleadsai:iframe-resize',
+      height: nextHeight,
+    })
   }
 
   const scheduleHeightPost = () => {
@@ -48,13 +49,10 @@ if (typeof window !== 'undefined' && window.parent !== window) {
 
   window.addEventListener('proleadsai:availability-changed', ((event: Event) => {
     const customEvent = event as CustomEvent<{ widgetEnabled?: boolean }>
-    window.parent.postMessage(
-      {
-        type: 'proleadsai:availability-changed',
-        widgetEnabled: Boolean(customEvent.detail?.widgetEnabled),
-      },
-      '*'
-    )
+    postToTrustedParent({
+      type: 'proleadsai:availability-changed',
+      widgetEnabled: Boolean(customEvent.detail?.widgetEnabled),
+    })
 
     scheduleHeightPost()
   }) as EventListener)

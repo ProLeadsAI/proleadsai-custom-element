@@ -9,9 +9,20 @@
       </h3>
       <p class="text-white text-xs md:text-sm mb-3 md:mb-4">Submit your info and we'll get in touch.</p>
       <div class="space-y-3">
-        <input v-model="form.name" type="text" placeholder="Full Name" class="w-full px-4 py-2 rounded-full bg-white text-base" />
-        <input v-model="form.email" type="email" placeholder="Email" class="w-full px-4 py-2 rounded-full bg-white text-base" />
-        <input v-model="form.phone" type="tel" placeholder="Phone Number" class="w-full px-4 py-2 rounded-full bg-white text-base" />
+        <input v-model="form.name" type="text" autocomplete="name" placeholder="Full Name" class="w-full px-4 py-2 rounded-full bg-white text-base" />
+        <input v-model="form.email" type="email" autocomplete="email" placeholder="Email" class="w-full px-4 py-2 rounded-full bg-white text-base" />
+        <input v-model="form.phone" type="tel" autocomplete="tel" placeholder="Phone Number" class="w-full px-4 py-2 rounded-full bg-white text-base" />
+        <label class="flex items-start gap-2 px-1 text-xs leading-5 text-stone-200">
+          <input v-model="form.privacyAccepted" type="checkbox" class="mt-1 shrink-0" />
+          <span>I agree to the privacy notice and to being contacted about this roof estimate. <strong class="text-white">Required.</strong></span>
+        </label>
+        <label class="flex items-start gap-2 px-1 text-xs leading-5 text-stone-300">
+          <input v-model="form.marketingAccepted" type="checkbox" class="mt-1 shrink-0" />
+          <span>I would also like relevant product updates and offers (optional).</span>
+        </label>
+        <p v-if="submitError" role="alert" class="rounded-lg bg-red-100 px-3 py-2 text-xs text-red-800">
+          {{ submitError }}
+        </p>
         <button :disabled="submitting" @click="submitEstimateForm" class="w-full py-2 md:py-3 bg-yellow-400 text-stone-800 font-semibold rounded-full hover:bg-yellow-500 transition-colors flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-60">
           <!-- Loading spinner -->
           <svg v-if="submitting" class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -85,39 +96,72 @@
 <script setup lang="ts">
 import { ref, nextTick } from 'vue'
 import { submitRoofEstimateForm } from '@/utils/api'
+import { emitEstimatorEvent } from '@/utils/analytics'
 
 const props = defineProps<{
+  sessionId?: string
   coordinates?: { lat: number; lng: number }
   onSuccess?: () => void
 }>()
 
 const quoteFormRef = ref<HTMLElement | null>(null)
-const form = ref({ name: '', email: '', phone: '' })
+const form = ref({
+  name: '',
+  email: '',
+  phone: '',
+  privacyAccepted: false,
+  marketingAccepted: false,
+})
 const submitting = ref(false)
 const submitted = ref(false)
+const submitError = ref('')
 
 async function submitEstimateForm() {
-  if (!form.value.name || !form.value.email || !form.value.phone) return
+  submitError.value = ''
+  if (!props.sessionId) {
+    submitError.value = 'This estimate session is unavailable. Please search the address again.'
+    return
+  }
+  if (!form.value.name.trim() || !form.value.email.trim() || !form.value.phone.trim()) {
+    submitError.value = 'Please enter your name, email address and phone number.'
+    return
+  }
+  if (!form.value.privacyAccepted) {
+    submitError.value = 'Please accept the privacy notice before submitting.'
+    return
+  }
   submitting.value = true
 
   try {
     const result = await submitRoofEstimateForm({
-      ...form.value,
+      sessionId: props.sessionId,
+      name: form.value.name.trim(),
+      email: form.value.email.trim(),
+      phone: form.value.phone.trim(),
+      privacyAccepted: true,
+      marketingAccepted: form.value.marketingAccepted,
       coordinates: props.coordinates,
     })
     if (!result || result.error) throw new Error('Failed to submit')
     submitted.value = true
-    form.value = { name: '', email: '', phone: '' }
+    emitEstimatorEvent('proleadsai_lead_submit', { consentCaptured: true })
+    form.value = {
+      name: '',
+      email: '',
+      phone: '',
+      privacyAccepted: false,
+      marketingAccepted: false,
+    }
     
     // Auto-scroll to confirmation message after DOM updates
     await nextTick()
     if (quoteFormRef.value) {
       quoteFormRef.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
-  } catch (err) {
-    console.error(err)
-    // Show inline error instead of alert
-    submitting.value = false
+  } catch (error) {
+    console.error(error)
+    submitError.value = error instanceof Error ? error.message : 'We could not submit your details. Please try again.'
+    emitEstimatorEvent('proleadsai_estimator_error', { stage: 'roofing_lead_submit' })
   } finally {
     submitting.value = false
   }

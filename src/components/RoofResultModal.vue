@@ -140,6 +140,7 @@
 
               <!-- Contact form -->
               <ResultModalContactForm
+                :session-id="currentResult.sessionId"
                 :coordinates="currentResult?.coordinates"
                 :on-success="() => emit('close')"
               />
@@ -156,6 +157,7 @@ import { ref, computed, watch } from 'vue'
 import RoofMapViewer from './RoofMapViewer.vue'
 import ResultModalContactForm from './ResultModalContactForm.vue'
 import { getRoofEstimate, type RoofEstimateResult } from '@/utils/api'
+import { emitEstimatorEvent } from '@/utils/analytics'
 
 const teleportTarget = computed(() => window.__PROLEADSAI_TELEPORT__ || null)
 
@@ -175,6 +177,7 @@ const emit = defineEmits<{
 
 // Dispatch global event when modal closes so launcher can clean up
 function handleClose() {
+  emitEstimatorEvent('proleadsai_estimator_close')
   window.dispatchEvent(new CustomEvent('proleadsai:modal-close'))
   emit('close')
 }
@@ -219,14 +222,20 @@ watch(
 
 async function onMarkerMoved(
   coordinates: { lat: number; lng: number },
-  _positionKey: string,
 ) {
   try {
+    emitEstimatorEvent('proleadsai_address_submit', { stage: 'roofing_map_adjustment' })
     const data = await getRoofEstimate({ lat: coordinates.lat, lng: coordinates.lng })
     resultHistory.value.push(data)
     currentResultIndex.value = resultHistory.value.length - 1
+    emitEstimatorEvent('proleadsai_estimate_view', {
+      stage: 'roofing_map_adjustment',
+      roofAreaSqFt: data.roofAreaSqFt,
+      roofSquares: data.roofSquares,
+    })
   } catch (error) {
     console.error('Error getting estimate:', error)
+    emitEstimatorEvent('proleadsai_estimator_error', { stage: 'roofing_map_adjustment' })
   }
 }
 

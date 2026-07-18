@@ -1,6 +1,9 @@
 // Configuration utility for the widget
 
+export type EstimatorType = 'roofing' | 'solar'
+
 export interface WidgetConfig {
+  estimatorType: EstimatorType
   orgId: string
   apiBaseUrl: string
   disableWhenUnavailable: boolean
@@ -28,9 +31,15 @@ export interface WidgetConfig {
   textColorShortcode: string
   headingSize: string
   textSize: string
+  countryCode: string
+  source: string
+  hideBranding: boolean
+  parentOrigin: string
+  analyticsConsent: boolean
 }
 
 const DEFAULT_CONFIG: WidgetConfig = {
+  estimatorType: 'roofing',
   orgId: '',
   apiBaseUrl: 'https://app.proleadsai.com/api',
   disableWhenUnavailable: false,
@@ -58,6 +67,11 @@ const DEFAULT_CONFIG: WidgetConfig = {
   textColorShortcode: '#44403c',
   headingSize: '',
   textSize: '',
+  countryCode: 'us',
+  source: 'widget',
+  hideBranding: false,
+  parentOrigin: '',
+  analyticsConsent: false,
 }
 
 function parseBooleanish(value: unknown, fallback = false): boolean {
@@ -86,6 +100,7 @@ function getConfigFromUrl(): Partial<WidgetConfig> {
   const searchParams = new URLSearchParams(window.location.search)
 
   return {
+    estimatorType: (readSearchParam(searchParams, 'type', 'estimator-type', 'estimatorType') as EstimatorType | undefined) || undefined,
     orgId: readSearchParam(searchParams, 'org-id', 'orgId', 'team-id', 'teamId') || '',
     apiBaseUrl: readSearchParam(searchParams, 'api-url', 'apiUrl') || '',
     disableWhenUnavailable: parseBooleanish(
@@ -117,15 +132,44 @@ function getConfigFromUrl(): Partial<WidgetConfig> {
     textColorShortcode: readSearchParam(searchParams, 'text-color-shortcode', 'textColorShortcode') || '',
     headingSize: readSearchParam(searchParams, 'heading-size', 'headingSize') || '',
     textSize: readSearchParam(searchParams, 'text-size', 'textSize') || '',
+    countryCode: readSearchParam(searchParams, 'country', 'country-code', 'countryCode') || '',
+    source: readSearchParam(searchParams, 'source') || '',
+    hideBranding: parseBooleanish(readSearchParam(searchParams, 'hide-branding', 'hideBranding'), DEFAULT_CONFIG.hideBranding),
+    parentOrigin: readSearchParam(searchParams, 'parent-origin', 'parentOrigin') || '',
+    analyticsConsent: parseBooleanish(readSearchParam(searchParams, 'analytics-consent', 'analyticsConsent'), DEFAULT_CONFIG.analyticsConsent),
   }
+}
+
+export function loadConfiguredFonts(config: Partial<WidgetConfig>) {
+  if (typeof document === 'undefined')
+    return
+
+  const fontsToLoad = [config.headingFont, config.textFont].filter((font): font is string => Boolean(font))
+  if (fontsToLoad.length === 0)
+    return
+
+  const uniqueFonts = [...new Set(fontsToLoad)]
+  const fontFamilies = uniqueFonts.map(font => font.replace(/ /g, '+')).join('&family=')
+  const linkId = `proleadsai-fonts-${uniqueFonts.map(font => font.toLowerCase().replace(/[^a-z0-9]+/g, '-')).join('-')}`
+
+  if (document.getElementById(linkId))
+    return
+
+  const link = document.createElement('link')
+  link.id = linkId
+  link.rel = 'stylesheet'
+  link.href = `https://fonts.googleapis.com/css2?family=${fontFamilies}:wght@400;500;600;700&display=swap`
+  document.head.appendChild(link)
 }
 
 export function getConfig(): WidgetConfig {
   // Try to get from window global (set by WordPress or parent)
   const windowConfig = (window.__PROLEADSAI_CONFIG__ || {}) as Partial<WidgetConfig>
   const urlConfig = getConfigFromUrl()
+  const estimatorType = (windowConfig.estimatorType as EstimatorType) || urlConfig.estimatorType || DEFAULT_CONFIG.estimatorType
 
   return {
+    estimatorType,
     orgId: windowConfig.orgId || urlConfig.orgId || DEFAULT_CONFIG.orgId,
     apiBaseUrl: windowConfig.apiBaseUrl || urlConfig.apiBaseUrl || DEFAULT_CONFIG.apiBaseUrl,
     disableWhenUnavailable: parseBooleanish(
@@ -138,11 +182,11 @@ export function getConfig(): WidgetConfig {
       DEFAULT_CONFIG.hideDefaultLauncher,
     ),
     googleMapsApiKey: windowConfig.googleMapsApiKey || urlConfig.googleMapsApiKey || DEFAULT_CONFIG.googleMapsApiKey,
-    primaryColor: windowConfig.primaryColor || urlConfig.primaryColor || DEFAULT_CONFIG.primaryColor,
+    primaryColor: windowConfig.primaryColor || urlConfig.primaryColor || (estimatorType === 'solar' ? '#2563eb' : DEFAULT_CONFIG.primaryColor),
     textColor: windowConfig.textColor || urlConfig.textColor || DEFAULT_CONFIG.textColor,
     displayMode: (windowConfig.displayMode as WidgetConfig['displayMode']) || urlConfig.displayMode || DEFAULT_CONFIG.displayMode,
-    buttonText: windowConfig.buttonText || urlConfig.buttonText || DEFAULT_CONFIG.buttonText,
-    buttonEmoji: windowConfig.buttonEmoji ?? urlConfig.buttonEmoji ?? DEFAULT_CONFIG.buttonEmoji,
+    buttonText: windowConfig.buttonText || urlConfig.buttonText || (estimatorType === 'solar' ? 'See Solar Potential' : DEFAULT_CONFIG.buttonText),
+    buttonEmoji: windowConfig.buttonEmoji ?? urlConfig.buttonEmoji ?? (estimatorType === 'solar' ? '☀️' : DEFAULT_CONFIG.buttonEmoji),
     buttonPosition: (windowConfig.buttonPosition as WidgetConfig['buttonPosition']) || urlConfig.buttonPosition || DEFAULT_CONFIG.buttonPosition,
     heading: windowConfig.heading || urlConfig.heading || DEFAULT_CONFIG.heading,
     subheading: windowConfig.subheading || urlConfig.subheading || DEFAULT_CONFIG.subheading,
@@ -157,6 +201,11 @@ export function getConfig(): WidgetConfig {
     textColorShortcode: windowConfig.textColorShortcode || urlConfig.textColorShortcode || DEFAULT_CONFIG.textColorShortcode,
     headingSize: windowConfig.headingSize || urlConfig.headingSize || DEFAULT_CONFIG.headingSize,
     textSize: windowConfig.textSize || urlConfig.textSize || DEFAULT_CONFIG.textSize,
+    countryCode: windowConfig.countryCode || urlConfig.countryCode || (estimatorType === 'solar' ? 'gb' : DEFAULT_CONFIG.countryCode),
+    source: windowConfig.source || urlConfig.source || DEFAULT_CONFIG.source,
+    hideBranding: parseBooleanish(windowConfig.hideBranding ?? urlConfig.hideBranding, DEFAULT_CONFIG.hideBranding),
+    parentOrigin: windowConfig.parentOrigin || urlConfig.parentOrigin || DEFAULT_CONFIG.parentOrigin,
+    analyticsConsent: parseBooleanish(windowConfig.analyticsConsent ?? urlConfig.analyticsConsent, DEFAULT_CONFIG.analyticsConsent),
   }
 }
 
@@ -183,7 +232,8 @@ export function getSessionId(): string {
   }
 
   // Generate new
-  const newId = `roof_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  const prefix = getConfig().estimatorType === 'solar' ? 'solar' : 'roof'
+  const newId = `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
   window.sessionId = newId
   try {
     localStorage.setItem('proleadsai_session_id', newId)

@@ -63,7 +63,7 @@
         </button>
 
         <!-- Widget content -->
-        <RoofEstimateHero @modal-opened="onModalOpened" />
+        <component :is="estimatorComponent" @modal-opened="onModalOpened" />
       </div>
     </Transition>
   </Teleport>
@@ -72,7 +72,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import RoofEstimateHero from './RoofEstimateHero.vue'
+import SolarEstimateHero from './SolarEstimateHero.vue'
 import { getConfig } from '@/utils/config'
+import { isTrustedParentMessage } from '@/utils/messaging'
 
 const props = defineProps<{
   buttonText?: string
@@ -81,6 +83,7 @@ const props = defineProps<{
 }>()
 
 const config = getConfig()
+const estimatorComponent = computed(() => config.estimatorType === 'solar' ? SolarEstimateHero : RoofEstimateHero)
 const isOpen = ref(false)
 
 const teleportTarget = computed(() => window.__PROLEADSAI_TELEPORT__ || null)
@@ -143,8 +146,8 @@ const edgeButtonStyle = computed(() => {
   }
 })
 
-const buttonText = computed(() => props.buttonText || config.buttonText || 'Get Roof Estimate')
-const buttonEmoji = computed(() => props.buttonEmoji ?? config.buttonEmoji ?? '🏠')
+const buttonText = computed(() => props.buttonText || config.buttonText || (config.estimatorType === 'solar' ? 'See Solar Potential' : 'Get Roof Estimate'))
+const buttonEmoji = computed(() => props.buttonEmoji ?? config.buttonEmoji ?? (config.estimatorType === 'solar' ? '☀️' : '🏠'))
 
 function openPanel() {
   isOpen.value = true
@@ -186,6 +189,9 @@ function handleExternalTriggerClick(event: Event) {
 }
 
 function handleWindowMessage(event: MessageEvent) {
+  if (!isTrustedParentMessage(event))
+    return
+
   const messageType = typeof event.data === 'string'
     ? event.data
     : event.data?.type

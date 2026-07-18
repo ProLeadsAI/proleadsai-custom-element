@@ -13,6 +13,7 @@
     "build:iframe": "vite build --config vite.iframe.config.ts",
     "build:lib": "pnpm build:widget",
     "preview": "vite preview",
+    "test": "node --test tests/*.test.ts",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix --cache",
     "format": "prettier --write --experimental-cli src/"

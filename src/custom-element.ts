@@ -1,6 +1,7 @@
 import './style.css'
 import { createApp } from 'vue'
 import App from './App.vue'
+import { loadConfiguredFonts, type WidgetConfig } from './utils/config'
 
 // Resolve the widget CSS URL from the current script's location
 function getWidgetCssUrl(): string {
@@ -24,28 +25,30 @@ function getWidgetCssUrl(): string {
 }
 
 // Shadow DOM custom element for full CSS isolation
-class RoofEstimatorElement extends HTMLElement {
+class ProLeadsAIEstimatorElement extends HTMLElement {
   private _app: ReturnType<typeof createApp> | null = null
 
   connectedCallback() {
     // Read attributes and set global config
+    const estimatorType: WidgetConfig['estimatorType'] = this.getAttribute('type') === 'solar' ? 'solar' : 'roofing'
     const config = {
+      estimatorType,
       orgId: this.getAttribute('org-id') || '',
       apiBaseUrl: this.getAttribute('api-url') || 'https://app.proleadsai.com/api',
       disableWhenUnavailable: this.hasAttribute('disable-when-unavailable') && this.getAttribute('disable-when-unavailable') !== 'false',
       openTriggerId: this.getAttribute('open-trigger-id') || '',
       hideDefaultLauncher: this.hasAttribute('hide-default-launcher') && this.getAttribute('hide-default-launcher') !== 'false',
       googleMapsApiKey: this.getAttribute('google-maps-api-key') || '',
-      primaryColor: this.getAttribute('primary-color') || '#facc15',
+      primaryColor: this.getAttribute('primary-color') || (estimatorType === 'solar' ? '#2563eb' : '#facc15'),
       textColor: this.getAttribute('text-color') || '#1c1917',
-      displayMode: this.getAttribute('display-mode') || 'inline',
-      buttonText: this.getAttribute('button-text') || 'Get Roof Estimate',
-      buttonEmoji: this.getAttribute('button-emoji') ?? '🏠',
-      buttonPosition: this.getAttribute('button-position') || 'bottom-right',
+      displayMode: (this.getAttribute('display-mode') as WidgetConfig['displayMode'] | null) || 'inline',
+      buttonText: this.getAttribute('button-text') || (estimatorType === 'solar' ? 'See Solar Potential' : 'Get Roof Estimate'),
+      buttonEmoji: this.getAttribute('button-emoji') ?? (estimatorType === 'solar' ? '☀️' : '🏠'),
+      buttonPosition: (this.getAttribute('button-position') as WidgetConfig['buttonPosition'] | null) || 'bottom-right',
       // Inline/shortcode settings
       heading: this.getAttribute('heading') || '',
       subheading: this.getAttribute('subheading') || '',
-      bgStyle: this.getAttribute('bg-style') || 'none',
+      bgStyle: (this.getAttribute('bg-style') as WidgetConfig['bgStyle'] | null) || 'none',
       bgColor: this.getAttribute('bg-color') || '#f5f5f4',
       heroImage: this.getAttribute('hero-image') || '',
       marginTop: this.getAttribute('margin-top') || '',
@@ -57,22 +60,19 @@ class RoofEstimatorElement extends HTMLElement {
       textColorShortcode: this.getAttribute('text-color-shortcode') || this.getAttribute('text-color') || '#44403c',
       headingSize: this.getAttribute('heading-size') || '',
       textSize: this.getAttribute('text-size') || '',
+      countryCode: this.getAttribute('country-code') || (estimatorType === 'solar' ? 'gb' : 'us'),
+      source: this.getAttribute('source') || 'widget',
+      hideBranding: this.hasAttribute('hide-branding') && this.getAttribute('hide-branding') !== 'false',
+      parentOrigin: this.getAttribute('parent-origin') || '',
+      analyticsConsent: this.hasAttribute('analytics-consent') && this.getAttribute('analytics-consent') !== 'false',
     }
     
     console.log('[ProLeadsAI Widget] Config from attributes:', config)
     
     window.__PROLEADSAI_CONFIG__ = config
 
-    // Load Google Fonts into document head (fonts must be in main document to work in Shadow DOM)
-    const fontsToLoad = [config.headingFont, config.textFont].filter(Boolean)
-    if (fontsToLoad.length > 0) {
-      const uniqueFonts = [...new Set(fontsToLoad)]
-      const fontFamilies = uniqueFonts.map(f => f.replace(/ /g, '+')).join('&family=')
-      const link = document.createElement('link')
-      link.rel = 'stylesheet'
-      link.href = `https://fonts.googleapis.com/css2?family=${fontFamilies}:wght@400;500;600;700&display=swap`
-      document.head.appendChild(link)
-    }
+    // Fonts must be loaded in the main document so the shadow root can inherit them.
+    loadConfiguredFonts(config)
 
     // Inject Google Places autocomplete styles into document head
     // (.pac-container is appended to <body> by Google, outside Shadow DOM)
@@ -142,20 +142,15 @@ class RoofEstimatorElement extends HTMLElement {
 }
 
 // Register the custom element
-customElements.define('roof-estimator', RoofEstimatorElement)
+class RoofEstimatorElement extends ProLeadsAIEstimatorElement {}
+
+if (!customElements.get('proleadsai-estimator'))
+  customElements.define('proleadsai-estimator', ProLeadsAIEstimatorElement)
+if (!customElements.get('roof-estimator'))
+  customElements.define('roof-estimator', RoofEstimatorElement)
 
 // Also export for manual registration
-export { RoofEstimatorElement }
-
-// Global mount function for non-custom-element usage
-declare global {
-  interface Window {
-    ProLeadsAI: {
-      mount: (selector: string | HTMLElement, options?: Record<string, unknown>) => void
-      openSearch: () => void
-    }
-  }
-}
+export { ProLeadsAIEstimatorElement, RoofEstimatorElement }
 
 window.ProLeadsAI = {
   mount(selector: string | HTMLElement, options: Record<string, unknown> = {}) {
@@ -166,22 +161,69 @@ window.ProLeadsAI = {
       return
     }
 
-    // Set global config
-    window.__PROLEADSAI_CONFIG__ = {
-      orgId: (options.orgId as string) || (options.teamId as string) || '',
-      apiBaseUrl: (options.apiUrl as string) || 'https://next.proleadsai.com/api',
-      disableWhenUnavailable: Boolean(options.disableWhenUnavailable),
-      openTriggerId: (options.openTriggerId as string) || '',
-      hideDefaultLauncher: Boolean(options.hideDefaultLauncher),
-      googleMapsApiKey: (options.googleMapsApiKey as string) || '',
-      primaryColor: (options.primaryColor as string) || '#1d4ed8',
+    // Mirror every supported option to attributes. connectedCallback is the
+    // canonical configuration path, so programmatic mounts and HTML embeds
+    // behave identically instead of the attribute defaults replacing options.
+    const element = document.createElement('proleadsai-estimator')
+    element.setAttribute('type', options.type === 'solar' ? 'solar' : 'roofing')
+    element.setAttribute('org-id', (options.orgId as string) || (options.teamId as string) || '')
+    element.setAttribute('api-url', (options.apiUrl as string) || 'https://app.proleadsai.com/api')
+
+    const stringOptions: Array<[string, string]> = [
+      ['openTriggerId', 'open-trigger-id'],
+      ['googleMapsApiKey', 'google-maps-api-key'],
+      ['primaryColor', 'primary-color'],
+      ['textColor', 'text-color'],
+      ['displayMode', 'display-mode'],
+      ['buttonText', 'button-text'],
+      ['buttonEmoji', 'button-emoji'],
+      ['buttonPosition', 'button-position'],
+      ['heading', 'heading'],
+      ['subheading', 'subheading'],
+      ['bgStyle', 'bg-style'],
+      ['bgColor', 'bg-color'],
+      ['heroImage', 'hero-image'],
+      ['marginTop', 'margin-top'],
+      ['marginBottom', 'margin-bottom'],
+      ['headingFont', 'heading-font'],
+      ['headingColor', 'heading-color'],
+      ['textFont', 'text-font'],
+      ['textColorShortcode', 'text-color-shortcode'],
+      ['headingSize', 'heading-size'],
+      ['textSize', 'text-size'],
+      ['countryCode', 'country-code'],
+      ['source', 'source'],
+      ['parentOrigin', 'parent-origin'],
+    ]
+    for (const [optionName, attributeName] of stringOptions) {
+      const value = options[optionName]
+      if (value !== undefined && value !== null)
+        element.setAttribute(attributeName, String(value))
     }
 
-    // Create and append the custom element
-    const element = document.createElement('roof-estimator')
+    if (!options.countryCode)
+      element.setAttribute('country-code', options.type === 'solar' ? 'gb' : 'us')
+    if (!options.source)
+      element.setAttribute('source', 'javascript-api')
+
+    const booleanOptions: Array<[string, string]> = [
+      ['disableWhenUnavailable', 'disable-when-unavailable'],
+      ['hideDefaultLauncher', 'hide-default-launcher'],
+      ['hideBranding', 'hide-branding'],
+      ['analyticsConsent', 'analytics-consent'],
+    ]
+    for (const [optionName, attributeName] of booleanOptions) {
+      const value = options[optionName]
+      if (value === true || value === 1 || value === 'true')
+        element.setAttribute(attributeName, 'true')
+    }
+
     container.appendChild(element)
   },
   openSearch() {
     window.dispatchEvent(new CustomEvent('proleadsai:open-search'))
+  },
+  openEstimator(type = 'roofing') {
+    window.dispatchEvent(new CustomEvent('proleadsai:open-search', { detail: { estimatorType: type } }))
   },
 }
